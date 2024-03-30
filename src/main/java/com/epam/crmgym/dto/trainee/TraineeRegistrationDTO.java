@@ -1,7 +1,10 @@
 package com.epam.crmgym.dto.trainee;
 
+import com.epam.crmgym.exception.DateDeSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +22,8 @@ public class TraineeRegistrationDTO {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @Past(message = "Date of birth must be in the past")
+    @JsonDeserialize(using = DateDeSerializer.class)
     private Date dateOfBirth;
 
     private String address;

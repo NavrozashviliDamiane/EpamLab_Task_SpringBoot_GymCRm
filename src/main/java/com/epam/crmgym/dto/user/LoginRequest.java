@@ -12,7 +12,7 @@ public class LoginRequest {
     @NotBlank(message = "First name is required")
     String username;
 
-    @NotNull(message = "First name is required")
-    @NotBlank(message = "First name is required")
+    @NotNull(message = "Password is required")
+    @NotBlank(message = "Password is required")
     String password;
 }

@@ -1,5 +1,6 @@
 package com.epam.crmgym.dto.trainer;
 
+import com.epam.crmgym.validation.ValidTrainingType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class TrainerRegistrationRequest {
     private String lastName;
 
     @NotNull(message = "Specialization name is required")
-    @NotBlank(message = "Specialization is required")
+    @NotBlank(message = "Specialization name is required")
+    @ValidTrainingType
     private String specialization;
 }

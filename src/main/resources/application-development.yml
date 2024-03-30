@@ -1,0 +1,9 @@
+spring:
+  messages:
+    basename: messages
+    cache-duration: -1
+    encoding: UTF-8
+    yaml:
+      mapping:
+        spring.messages.*: First name is required (Development)
+        traineeRegistrationDTO.lastName.notBlank: Last name is required (Development)
