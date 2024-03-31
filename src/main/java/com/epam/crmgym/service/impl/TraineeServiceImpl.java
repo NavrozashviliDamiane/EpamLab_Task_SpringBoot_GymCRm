@@ -103,7 +103,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public Trainee updateTraineeProfile(String username, String firstName, String password, String lastName,
-                                        Date dateOfBirth, String address, boolean isActive) {
+                                        Date dateOfBirth, String address, Boolean isActive) {
 
         String transactionId = UUID.randomUUID().toString();
         log.info("Transaction started for trainee update. Transaction ID: {}", transactionId);

@@ -17,10 +17,12 @@ public interface TraineeService {
     TraineeProfileDTO getTraineeProfile(String username);
 
 
+
+
+
     @Transactional
     Trainee updateTraineeProfile(String username, String firstName, String password, String lastName,
-                                 Date dateOfBirth, String address, boolean isActive);
-
+                                 Date dateOfBirth, String address, Boolean isActive);
 
     Trainee createTrainee(String firstName, String lastName, Date dateOfBirth, String address) throws UsernameValidationException;
 

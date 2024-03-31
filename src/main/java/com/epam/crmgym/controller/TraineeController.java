@@ -2,6 +2,8 @@ package com.epam.crmgym.controller;
 
 
 
+import com.epam.crmgym.dto.trainee.TraineeUpdateRequest;
+import com.epam.crmgym.dto.user.LoginRequest;
 import com.epam.crmgym.exception.BindingResultError;
 import com.epam.crmgym.exception.UsernameValidationException;
 import jakarta.validation.Valid;
@@ -97,7 +99,9 @@ public class TraineeController {
 
 
     @GetMapping("/get-profile")
-    public ResponseEntity<?> getTraineeProfile(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
+        String username = userCredentials.getUsername();
+        String password = userCredentials.getPassword();
 
         log.info("REST call made to /api/trainees/get-profile endpoint. Request: {} {}", username, password);
 
@@ -116,7 +120,7 @@ public class TraineeController {
             log.error("Authentication failed for user: {}", username, e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         } catch (Exception e) {
-            log.info("\"Error occurred while processing /api/trainees/register endpoint.\", e");
+            log.info("Error occurred while processing /api/trainees/register endpoint.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
@@ -124,15 +128,14 @@ public class TraineeController {
 
 
     @PutMapping("/update-profile")
-    public ResponseEntity<?> updateTraineeProfile(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password,
-            @Valid @RequestBody TraineeUpdateDTO updateDTO) {
+    public ResponseEntity<?> updateTraineeProfile(@Validated @RequestBody TraineeUpdateDTO updateDTO) {
+        String username = updateDTO.getUsername();
+        String password = updateDTO.getPassword();
+
 
         log.info("REST call made to /api/trainees/update-profile endpoint. Request: {} {} {}", username, password, updateDTO);
 
         try {
-
             if (!authenticateService.matchUserCredentials(username, password)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
             }
@@ -144,22 +147,24 @@ public class TraineeController {
                     updateDTO.getLastName(),
                     updateDTO.getDateOfBirth(),
                     updateDTO.getAddress(),
-                    updateDTO.isActive()
+                    updateDTO.getIsActive()
             );
 
             return updatedTrainee != null ?
                     ResponseEntity.ok(traineeMapper.mapTraineeToDTO(updatedTrainee)) :
                     ResponseEntity.notFound().build();
         } catch (Exception e) {
-            log.info("\"Error occurred while processing /api/trainees/update-profile endpoint.\", e");
-
+            log.info("Error occurred while processing /api/trainees/update-profile endpoint.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request");
         }
     }
 
 
+
     @DeleteMapping("/delete-profile")
-    public ResponseEntity<String> deleteTraineeProfile(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<?> deleteTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
+        String username = userCredentials.getUsername();
+        String password = userCredentials.getPassword();
 
         log.info("REST call made to /api/trainees/delete-profile endpoint. Request: {} {}", username, password);
 

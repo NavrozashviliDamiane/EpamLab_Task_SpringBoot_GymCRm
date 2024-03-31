@@ -1,14 +1,11 @@
-package com.epam.crmgym.dto.user;
-
+package com.epam.crmgym.dto.trainee;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-public class UserCredentialsDTO {
+public class TraineeUpdateRequest {
 
     @NotNull(message = "Username is required")
     @NotBlank(message = "Username is required")
@@ -17,4 +14,7 @@ public class UserCredentialsDTO {
     @NotNull(message = "password is required")
     @NotBlank(message = "Password is required")
     private String password;
+
+    private TraineeUpdateDTO updateDTO;
 }
+
