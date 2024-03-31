@@ -13,6 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrainerProfileDTO {
+
+    @NotNull(message = "Username is required")
+    @NotBlank(message = "Username is required")
+    private String username;
+
+
     @NotNull(message = "First name is required")
     @NotBlank(message = "First name is required")
     private String firstName;

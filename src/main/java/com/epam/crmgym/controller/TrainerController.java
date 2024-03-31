@@ -1,5 +1,6 @@
 package com.epam.crmgym.controller;
 
+import com.epam.crmgym.dto.user.UserCredentialsDTO;
 import com.epam.crmgym.exception.BindingResultError;
 import com.epam.crmgym.exception.UsernameValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -66,30 +67,37 @@ public class TrainerController {
     }
 
     @GetMapping("/get-profile")
-    public ResponseEntity<?> getTrainerProfile(
-            @RequestParam String username,
-            @RequestParam String password
-    ) {
+    public ResponseEntity<?> getTrainerProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
+        String username = userCredentials.getUsername();
+        String password = userCredentials.getPassword();
 
         log.info("REST call made to /api/trainers/get-profile endpoint. Request: {} {}", username, password);
+
         if (!authenticateService.matchUserCredentials(username, password)) {
-            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
 
         TrainerProfileDTO trainerProfile = trainerService.getTrainerProfile(username, password);
         if (trainerProfile != null) {
-
             return ResponseEntity.ok(trainerProfile);
         } else {
-            log.info("\"Error occurred while processing /api/trainers/get-profile endpoint.\", e");
+            log.info("Error occurred while processing /api/trainers/get-profile endpoint.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainer not found");
         }
     }
 
+
     @PutMapping("/update-profile")
-    public ResponseEntity<?> updateTrainerProfile(@RequestBody TrainerUpdateDTO trainerUpdateDTO) {
+    public ResponseEntity<?> updateTrainerProfile(@Validated @RequestBody TrainerUpdateDTO trainerUpdateDTO) {
+
+        String username = trainerUpdateDTO.getUsername();
+        String password = trainerUpdateDTO.getPassword();
 
         log.info("REST call made to /api/trainers/update-profile endpoint. Request: {}", trainerUpdateDTO);
+
+        if (!authenticateService.matchUserCredentials(username, password)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
 
         TrainerProfileDTO updatedProfile = trainerService.updateTrainerProfile(trainerUpdateDTO);
         if (updatedProfile != null) {

@@ -42,8 +42,8 @@ public class TraineeUpdateDTO {
 
     private String address;
 
-    @NotNull(message = "Active status is required")
-    @RequiredBoolean(message = "Active status is required")
+    @NotNull(message = "Status field is required")
+    @RequiredBoolean(message = "Status field is required")
     private Boolean isActive;
 
 

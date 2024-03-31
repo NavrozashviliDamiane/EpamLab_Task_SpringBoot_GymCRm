@@ -19,6 +19,7 @@ public class TrainerProfileDtoCreator {
     public TrainerProfileDTO createTrainerProfileDTO(Trainer trainer) {
         TrainerProfileDTO profileDTO = new TrainerProfileDTO();
         User user = trainer.getUser();
+        profileDTO.setUsername(user.getUsername());
         profileDTO.setFirstName(user.getFirstName());
         profileDTO.setLastName(user.getLastName());
         profileDTO.setIsActive(user.isActive());

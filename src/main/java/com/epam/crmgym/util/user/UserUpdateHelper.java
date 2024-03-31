@@ -15,7 +15,7 @@ public class UserUpdateHelper {
     public User updateUser(User user, TrainerUpdateDTO trainerUpdateDTO) {
         user.setFirstName(trainerUpdateDTO.getFirstName());
         user.setLastName(trainerUpdateDTO.getLastName());
-        user.setActive(trainerUpdateDTO.isActive());
+        user.setActive(trainerUpdateDTO.getIsActive());
         return userService.saveUser(user);
     }
 }

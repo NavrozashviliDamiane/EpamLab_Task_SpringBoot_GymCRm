@@ -198,9 +198,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         authenticateService.matchUserCredentials(username, password);
         Trainer trainer = trainerRepository.findByUserUsername(username);
-        if (trainer == null) {
-            return null;
-        }
+
 
         User user = trainer.getUser();
         userUpdateHelper.updateUser(user, trainerUpdateDTO);
