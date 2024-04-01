@@ -231,52 +231,66 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public List<TrainerResponse> updateTraineeTrainerList(String traineeUsername, List<String> trainerUsernames) {
-
         log.info("Updating trainee's trainer list for trainee: {}", traineeUsername);
 
+        // Find the trainee by username
         Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
-
         if (trainee == null) {
             log.info("Trainee not found with username: {}", traineeUsername);
-
             return null;
         }
 
         Long traineeId = trainee.getId();
         log.info("Trainee found with ID: {}", traineeId);
 
+        // Retrieve the trainings associated with the trainee
         List<Training> trainings = trainingRepository.findByTraineeId(traineeId);
         log.info("Found {} trainings associated with trainee", trainings.size());
 
-
+        // Iterate over the list of trainer usernames
         for (String trainerUsername : trainerUsernames) {
+            // Find the trainer by username
             Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
             if (trainer != null) {
                 log.info("Trainer found with username: {}", trainerUsername);
                 Long trainerTrainingTypeId = trainer.getTrainingType().getId();
 
+                // Iterate over the trainings associated with the trainee
                 for (Training training : trainings) {
+                    // Check if the training has already been updated by another trainer
+                    if (training.getTrainer() != null) {
+                        continue; // Skip to the next training if it has been updated
+                    }
+
                     Long trainingTrainingTypeId = training.getTrainingType().getId();
+                    // Update the training if it matches the trainer's training type
                     if (trainingTrainingTypeId.equals(trainerTrainingTypeId)) {
                         training.setTrainer(trainer);
                         trainingRepository.save(training);
                         log.info("Training updated with new trainer: {}", trainer.getUser());
+                        break; // Break out of the loop after updating one training
                     }
                 }
             }
         }
 
-
+        // Create a list to store the updated trainers' responses
         List<TrainerResponse> updatedTrainers = new ArrayList<>();
+        // Iterate over the updated trainings
         for (Training training : trainings) {
-            Trainer trainer = trainerRepository.findById(training.getTrainer().getId()).orElse(null);
-            if (trainer != null) {
-                TrainerResponse trainerResponse = new TrainerResponse();
-                trainerResponse.setUsername(trainer.getUser().getUsername());
-                trainerResponse.setFirstName(trainer.getUser().getFirstName());
-                trainerResponse.setLastName(trainer.getUser().getLastName());
-                trainerResponse.setSpecialization(training.getTrainingType().getTrainingType().toString());
-                updatedTrainers.add(trainerResponse);
+            // If the training has been updated with a trainer
+            if (training.getTrainer() != null) {
+                // Get the trainer associated with the training
+                Trainer trainer = trainerRepository.findById(training.getTrainer().getId()).orElse(null);
+                if (trainer != null) {
+                    // Create a TrainerResponse object and add it to the list
+                    TrainerResponse trainerResponse = new TrainerResponse();
+                    trainerResponse.setUsername(trainer.getUser().getUsername());
+                    trainerResponse.setFirstName(trainer.getUser().getFirstName());
+                    trainerResponse.setLastName(trainer.getUser().getLastName());
+                    trainerResponse.setSpecialization(training.getTrainingType().getTrainingType().toString());
+                    updatedTrainers.add(trainerResponse);
+                }
             }
         }
 
@@ -284,5 +298,6 @@ public class TraineeServiceImpl implements TraineeService {
 
         return updatedTrainers;
     }
+
 
 }

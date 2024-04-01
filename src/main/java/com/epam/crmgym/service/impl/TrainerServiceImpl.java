@@ -17,9 +17,12 @@ import com.epam.crmgym.util.trainer.TrainerSpecializationUpdater;
 import com.epam.crmgym.util.user.UserUpdateHelper;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -225,21 +228,21 @@ public class TrainerServiceImpl implements TrainerService {
             Trainee trainee = null;
             if (request.getTraineeName() != null) {
                 trainee = traineeRepository.findByUserUsername(request.getTraineeName());
-                if (trainee != null) {
-                    log.debug("Trainee found with ID: {}", trainee.getId());
-                } else {
+                if (trainee == null) {
                     log.warn("No trainee found for username: {}", request.getTraineeName());
+                    return Collections.emptyList();
                 }
+                log.debug("Trainee found with ID: {}", trainee.getId());
             }
 
             Trainer trainer = null;
             if (request.getUsername() != null) {
                 trainer = trainerRepository.findByUserUsername(request.getUsername());
-                if (trainer != null) {
-                    log.debug("Trainer found with ID: {}", trainer.getId());
-                } else {
+                if (trainer == null) {
                     log.warn("No trainer found for username: {}", username);
+                    return Collections.emptyList();
                 }
+                log.debug("Trainer found with ID: {}", trainer.getId());
             }
 
             List<Training> trainings = queryConstructor.constructQuery(
@@ -251,13 +254,19 @@ public class TrainerServiceImpl implements TrainerService {
 
             log.info("Found {} trainings for username: {}", trainings.size(), username);
 
-            return trainings.stream()
+            List<TrainerTrainingResponseDTO> responseDTOs = trainings.stream()
                     .map(trainerTrainingMapper::mapTrainingToResponseDTO)
                     .collect(Collectors.toList());
+
+            return responseDTOs;
         } catch (Exception e) {
             log.error("Error occurred while fetching trainer trainings for username: {}", request.getUsername(), e);
-            throw e;
+            throw new RuntimeException("Error occurred while fetching trainer trainings", e);
         }
     }
 
+
 }
+
+
+

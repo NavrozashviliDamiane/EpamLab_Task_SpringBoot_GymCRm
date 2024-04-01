@@ -35,6 +35,7 @@ public class GetTraineeTrainingsHelper {
             }
         }
         return null;
+
     }
 
     public Long getTrainingTypeId(String trainingTypeName) {
@@ -48,48 +49,45 @@ public class GetTraineeTrainingsHelper {
     }
 
     public List<Training> constructQuery(Long traineeId, Date fromDate, Date toDate, Long trainerId, Long trainingTypeId) {
-        // Check if traineeId is provided
         if (traineeId == null) {
             throw new IllegalArgumentException("Trainee ID cannot be null.");
         }
 
-        // Initialize the list of trainings
         List<Training> trainings;
 
-        // Construct query based on provided parameters
-        if (fromDate != null && toDate != null) {
-            if (trainerId != null && trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeId(
-                        traineeId, fromDate, toDate, trainerId, trainingTypeId);
-            } else if (trainerId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerId(
-                        traineeId, fromDate, toDate, trainerId);
-            } else if (trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingTypeId(
-                        traineeId, fromDate, toDate, trainingTypeId);
+        if (trainerId != null && fromDate == null && toDate == null && trainingTypeId == null) {
+            if (trainerId == null) {
+                throw new IllegalArgumentException("Trainer ID cannot be null.");
             } else {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetween(
-                        traineeId, fromDate, toDate);
+                trainings = trainingRepository.findByTraineeIdAndTrainerId(traineeId, trainerId);
             }
+
+
         } else {
-            // Check if toDate is provided
-            if (toDate != null) {
+            if (fromDate != null && toDate != null) {
                 if (trainerId != null && trainingTypeId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerIdAndTrainingTypeId(
-                            traineeId, toDate, trainerId, trainingTypeId);
+                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeId(traineeId, fromDate, toDate, trainerId, trainingTypeId);
                 } else if (trainerId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerId(
-                            traineeId, toDate, trainerId);
+                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerId(traineeId, fromDate, toDate, trainerId);
                 } else if (trainingTypeId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainingTypeId(
-                            traineeId, toDate, trainingTypeId);
+                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingTypeId(traineeId, fromDate, toDate, trainingTypeId);
                 } else {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBefore(
-                            traineeId, toDate);
+                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetween(traineeId, fromDate, toDate);
                 }
             } else {
-                // If neither fromDate nor toDate is provided, return all trainings for the trainee
-                trainings = trainingRepository.findByTraineeId(traineeId);
+                if (toDate != null) {
+                    if (trainerId != null && trainingTypeId != null) {
+                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerIdAndTrainingTypeId(traineeId, toDate, trainerId, trainingTypeId);
+                    } else if (trainerId != null) {
+                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerId(traineeId, toDate, trainerId);
+                    } else if (trainingTypeId != null) {
+                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainingTypeId(traineeId, toDate, trainingTypeId);
+                    } else {
+                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBefore(traineeId, toDate);
+                    }
+                } else {
+                    trainings = trainingRepository.findByTraineeId(traineeId);
+                }
             }
         }
 
@@ -98,29 +96,24 @@ public class GetTraineeTrainingsHelper {
 
 
 
-
     public List<TrainingDTO> mapToTrainingDTO(List<Training> trainings) {
-        return trainings.stream()
-                .map(training -> {
-                    TrainingDTO trainingDTO = new TrainingDTO();
-                    trainingDTO.setTrainingName(training.getTrainingName());
-                    trainingDTO.setTrainingDate(training.getTrainingDate());
-                    if (training.getTrainingType() != null) {
-                        trainingDTO.setTrainingType(training.getTrainingType().getTrainingType().toString());
-                    } else {
-                        trainingDTO.setTrainingType("Unknown");
-                    }
-                    trainingDTO.setTrainingDuration(training.getTrainingDuration());
-                    if (training.getTrainer() != null && training.getTrainer().getUser()!= null) {
-                        trainingDTO.setTrainerName(training.getTrainer().getUser().getFirstName() + " " +
-                                training.getTrainer().getUser().getLastName());
-                    } else {
-                        trainingDTO.setTrainerName("Unknown");
-                    }
-                    return trainingDTO;
-                })
-                .collect(Collectors.toList());
+        return trainings.stream().map(training -> {
+            TrainingDTO trainingDTO = new TrainingDTO();
+            trainingDTO.setTrainingName(training.getTrainingName());
+            trainingDTO.setTrainingDate(training.getTrainingDate());
+            if (training.getTrainingType() != null) {
+                trainingDTO.setTrainingType(training.getTrainingType().getTrainingType().toString());
+            } else {
+                trainingDTO.setTrainingType("Unknown");
+            }
+            trainingDTO.setTrainingDuration(training.getTrainingDuration());
+            if (training.getTrainer() != null && training.getTrainer().getUser() != null) {
+                trainingDTO.setTrainerName(training.getTrainer().getUser().getFirstName() + " " + training.getTrainer().getUser().getLastName());
+            } else {
+                trainingDTO.setTrainerName("Unknown");
+            }
+            return trainingDTO;
+        }).collect(Collectors.toList());
     }
 }
-
 

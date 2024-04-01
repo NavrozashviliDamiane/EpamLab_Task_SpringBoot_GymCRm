@@ -162,7 +162,7 @@ public class TrainerController {
 
 
     @GetMapping("/trainer/trainings")
-    public ResponseEntity<List<TrainerTrainingResponseDTO>> getTrainerTrainings(
+    public ResponseEntity<?> getTrainerTrainings(
             @RequestBody TrainerTrainingsRequestDTO request
     ) {
         String username = request.getUsername();
@@ -176,7 +176,9 @@ public class TrainerController {
         try {
             List<TrainerTrainingResponseDTO> trainings = trainerService.getTrainerTrainings(request);
             return ResponseEntity.ok(trainings);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }   catch (Exception e) {
             log.info("Error occurred while processing /api/trainers/trainings endpoint:", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

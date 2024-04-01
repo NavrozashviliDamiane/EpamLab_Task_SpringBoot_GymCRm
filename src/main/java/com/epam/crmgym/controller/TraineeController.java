@@ -236,7 +236,10 @@ public class TraineeController {
 
 
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        catch (Exception e) {
             log.error("Error occurred while processing /api/trainees/trainings endpoint.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonList(new TrainingDTO("Error occurred while processing the request. Please try again later.", null, null, null, null)));
@@ -246,10 +249,15 @@ public class TraineeController {
 
 
 
-    @PutMapping("/{traineeUsername}/trainers")
+    @PutMapping("/update-trainers")
     public ResponseEntity<List<TrainerResponse>> updateTraineeTrainerList(
-            @PathVariable String traineeUsername,
-            @RequestBody List<String> trainerUsernames) {
+            @RequestBody UpdateTraineeTrainerListRequest request) {
+        String traineeUsername = request.getTraineeUsername();
+        String traineePassword = request.getTraineePassword();
+        List<String> trainerUsernames = request.getTrainerUsernames();
+
+        authenticateService.matchUserCredentials(traineeUsername, traineePassword);
+
         log.info("Received request to update trainer list for trainee: {}", traineeUsername);
 
         List<TrainerResponse> updatedTrainers = traineeService.updateTraineeTrainerList(traineeUsername, trainerUsernames);
@@ -261,5 +269,6 @@ public class TraineeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
 
 }
