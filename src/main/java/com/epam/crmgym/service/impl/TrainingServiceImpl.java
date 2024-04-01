@@ -58,12 +58,15 @@ public class TrainingServiceImpl implements TrainingService {
                                    String trainingName, Date trainingDate, Integer trainingDuration,
                                    String password){
 
-        authenticateService.matchUserCredentials(trainerUsername, password);
+        authenticateService.matchUserCredentials(traineeUsername, password);
         log.info("User Authenticated Successfully");
 
         Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
 
         Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
+
+        TrainingType trainingType = trainer.getTrainingType();
+
 
 
         Training training = new Training();
@@ -73,6 +76,8 @@ public class TrainingServiceImpl implements TrainingService {
         training.setTrainingName(trainingName);
         training.setTrainingDate(trainingDate);
         training.setTrainingDuration(trainingDuration);
+        training.setTrainingType(trainingType);
+
 
         log.info("Training Created Successfully");
         return trainingRepository.save(training);

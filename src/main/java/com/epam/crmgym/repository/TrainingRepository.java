@@ -33,4 +33,28 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
     List<Training> findByTrainerUserUsernameAndTrainingDateBetweenAndTraineeUserFirstNameContainingIgnoreCase(String username, Date periodFrom, Date periodTo, String traineeName);
 
     List<Training> findByTrainerUserUsernameAndTraineeUserFirstNameContainingIgnoreCase(String username, String traineeName);
+
+    List<Training> findByTraineeIdAndTrainerIdAndTrainingTypeId(Long traineeId, Long trainerId, Long trainingTypeId);
+
+    List<Training> findByTraineeIdAndTrainerId(Long traineeId, Long trainerId);
+
+    List<Training> findByTraineeIdAndTrainingTypeId(Long traineeId, Long trainingTypeId);
+
+    List<Training> findByTrainerIdAndTraineeId(Long trainerId, Long traineeId);
+
+    List<Training> findByTrainerIdAndTrainingDateBetween(Long trainerId, Date fromDate, Date toDate);
+
+    List<Training> findByTrainerIdAndTrainingDateAfter(Long trainerId, Date fromDate);
+
+    List<Training> findByTrainerIdAndTrainingDateBefore(Long trainerId, Date toDate);
+
+    List<Training> findByTraineeIdAndTrainingDateBetweenAndTrainerId(Long traineeId, Date fromDate, Date toDate, Long trainerId);
+
+    List<Training> findByTraineeIdAndTrainingDateBeforeAndTrainerIdAndTrainingTypeId(Long traineeId, Date toDate, Long trainerId, Long trainingTypeId);
+
+    List<Training> findByTraineeIdAndTrainingDateBeforeAndTrainerId(Long traineeId, Date toDate, Long trainerId);
+
+    List<Training> findByTraineeIdAndTrainingDateBeforeAndTrainingTypeId(Long traineeId, Date toDate, Long trainingTypeId);
+
+    List<Training> findByTraineeIdAndTrainingDateBefore(Long traineeId, Date toDate);
 }

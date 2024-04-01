@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+
 public class TrainingTypeValidator implements ConstraintValidator<ValidTrainingType, String> {
 
     private final Set<String> allowedValues = new HashSet<>(Arrays.asList("CARDIO", "WEIGHT_TRAINING", "YOGA", "CROSSFIT"));
@@ -17,7 +18,10 @@ public class TrainingTypeValidator implements ConstraintValidator<ValidTrainingT
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return value != null && allowedValues.contains(value.toUpperCase());
+        if (value == null) {
+            return true;
+        }
+        return allowedValues.contains(value.toUpperCase());
     }
 }
 

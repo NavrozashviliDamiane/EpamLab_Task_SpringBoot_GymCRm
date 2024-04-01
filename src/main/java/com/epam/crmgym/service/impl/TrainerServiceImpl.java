@@ -1,6 +1,7 @@
 package com.epam.crmgym.service.impl;
 
 import com.epam.crmgym.exception.UsernameValidationException;
+import com.epam.crmgym.util.trainer.TrainingQueryConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.epam.crmgym.dto.trainee.TraineeDTO;
 import com.epam.crmgym.dto.trainer.*;
@@ -14,6 +15,7 @@ import com.epam.crmgym.service.UserService;
 import com.epam.crmgym.util.trainer.TrainerProfileDtoCreator;
 import com.epam.crmgym.util.trainer.TrainerSpecializationUpdater;
 import com.epam.crmgym.util.user.UserUpdateHelper;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,9 @@ import java.util.stream.Collectors;
 public class TrainerServiceImpl implements TrainerService {
 
     private final TrainerRepository trainerRepository;
+
+    private final TrainingQueryConstructor queryConstructor;
+
     private final UserService userService;
     private final TrainingTypeRepository trainingTypeRepository;
     private final TraineeRepository traineeRepository;
@@ -54,7 +59,7 @@ public class TrainerServiceImpl implements TrainerService {
                               TrainerMapper trainerMapper, TrainerTrainingMapper trainerTrainingMapper,
                               UserRepository userRepository, UserUpdateHelper userUpdateHelper,
                               TrainerSpecializationUpdater specializationUpdater,
-                              TrainerProfileDtoCreator profileDtoCreator) {
+                              TrainerProfileDtoCreator profileDtoCreator, TrainingQueryConstructor queryConstructor) {
         this.trainerRepository = trainerRepository;
         this.userService = userService;
         this.trainingTypeRepository = trainingTypeRepository;
@@ -66,6 +71,7 @@ public class TrainerServiceImpl implements TrainerService {
         this.userUpdateHelper = userUpdateHelper;
         this.specializationUpdater = specializationUpdater;
         this.profileDtoCreator = profileDtoCreator;
+        this.queryConstructor = queryConstructor;
     }
 
 
@@ -185,10 +191,11 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerRepository.findAll().stream()
                 .filter(trainer -> trainingsWithTrainee.stream()
                         .noneMatch(training -> Objects.equals(training.getTrainer(), trainer)))
+                .filter(trainer -> trainer.getUser().isActive())
                 .map(trainerMapper::convertToTrainerDTO)
                 .collect(Collectors.toList());
-
     }
+
 
 
     @Override
@@ -208,19 +215,49 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<TrainerTrainingResponseDTO> getTrainerTrainings(TrainerTrainingsRequestDTO request) {
-        List<Training> trainings;
+        try {
+            String username = request.getUsername();
+            log.info("Fetching trainer trainings for username: {}", username);
 
-        trainings = trainingRepository.findByTrainerUserUsernameAndTrainingDateBetweenAndTraineeUserFirstNameContainingIgnoreCase(
-                request.getUsername(), request.getPeriodFrom(), request.getPeriodTo(), request.getTraineeName());
+            Trainee trainee = null;
+            if (request.getTraineeName() != null) {
+                trainee = traineeRepository.findByUserUsername(request.getTraineeName());
+                if (trainee != null) {
+                    log.debug("Trainee found with ID: {}", trainee.getId());
+                } else {
+                    log.warn("No trainee found for username: {}", request.getTraineeName());
+                }
+            }
 
-        return trainings.stream()
-                .map(trainerTrainingMapper::mapTrainingToResponseDTO)
-                .collect(Collectors.toList());
+            Trainer trainer = null;
+            if (request.getUsername() != null) {
+                trainer = trainerRepository.findByUserUsername(request.getUsername());
+                if (trainer != null) {
+                    log.debug("Trainer found with ID: {}", trainer.getId());
+                } else {
+                    log.warn("No trainer found for username: {}", username);
+                }
+            }
+
+            List<Training> trainings = queryConstructor.constructQuery(
+                    trainer != null ? trainer.getId() : null,
+                    request.getPeriodFrom(),
+                    request.getPeriodTo() != null ? DateUtils.addDays(request.getPeriodTo(), 1) : null,
+                    trainee != null ? trainee.getId() : null
+            );
+
+            log.info("Found {} trainings for username: {}", trainings.size(), username);
+
+            return trainings.stream()
+                    .map(trainerTrainingMapper::mapTrainingToResponseDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error occurred while fetching trainer trainings for username: {}", request.getUsername(), e);
+            throw e;
+        }
     }
-
-
 
 }

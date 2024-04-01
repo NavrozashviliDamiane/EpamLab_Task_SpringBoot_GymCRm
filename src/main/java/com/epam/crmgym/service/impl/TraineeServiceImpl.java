@@ -1,12 +1,14 @@
 package com.epam.crmgym.service.impl;
 
-import com.epam.crmgym.exception.UsernameValidationException;
-import lombok.extern.slf4j.Slf4j;
 import com.epam.crmgym.dto.trainee.TraineeProfileDTO;
 import com.epam.crmgym.dto.trainer.TrainerDTO;
 import com.epam.crmgym.dto.trainer.TrainerResponse;
 import com.epam.crmgym.dto.training.TrainingDTO;
-import com.epam.crmgym.entity.*;
+import com.epam.crmgym.entity.Trainee;
+import com.epam.crmgym.entity.Trainer;
+import com.epam.crmgym.entity.Training;
+import com.epam.crmgym.entity.User;
+import com.epam.crmgym.exception.UsernameValidationException;
 import com.epam.crmgym.mapper.TrainingToTrainerMapper;
 import com.epam.crmgym.repository.TraineeRepository;
 import com.epam.crmgym.repository.TrainerRepository;
@@ -16,7 +18,9 @@ import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TraineeService;
 import com.epam.crmgym.service.TrainingService;
 import com.epam.crmgym.service.UserService;
-import  com.epam.crmgym.util.trainee.GetTraineeTrainingsHelper;
+import com.epam.crmgym.util.trainee.GetTraineeTrainingsHelper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +52,7 @@ public class TraineeServiceImpl implements TraineeService {
                               AuthenticateService authenticateService,
                               TrainingService trainingService, TrainingRepository trainingRepository,
                               TrainerRepository trainerRepository, TrainingTypeRepository trainingTypeRepository,
-                              TrainingToTrainerMapper trainingToTrainerMapper,  GetTraineeTrainingsHelper getTraineeTrainingsHelper
+                              TrainingToTrainerMapper trainingToTrainerMapper, GetTraineeTrainingsHelper getTraineeTrainingsHelper
     ) {
         this.traineeRepository = traineeRepository;
         this.userService = userService;
@@ -60,8 +64,6 @@ public class TraineeServiceImpl implements TraineeService {
         this.trainingToTrainerMapper = trainingToTrainerMapper;
         this.getTraineeTrainingsHelper = getTraineeTrainingsHelper;
     }
-
-
 
 
     @Override
@@ -97,7 +99,6 @@ public class TraineeServiceImpl implements TraineeService {
             throw ex;
         }
     }
-
 
 
     @Override
@@ -137,8 +138,6 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
 
-
-
     @Override
     @Transactional
     public Trainee createTrainee(String firstName, String lastName, Date dateOfBirth, String address) throws UsernameValidationException {
@@ -166,7 +165,6 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
 
-
     @Override
     @Transactional
     public void updateTraineeStatus(String username, boolean isActive) {
@@ -178,8 +176,10 @@ public class TraineeServiceImpl implements TraineeService {
             log.info("Trainee status updated Successfully!");
         } else {
             log.error("Trainee not found with username: " + username);
+            throw new IllegalArgumentException("Trainee not found with username: " + username);
         }
     }
+
 
     @Override
     @Transactional
@@ -218,11 +218,15 @@ public class TraineeServiceImpl implements TraineeService {
         Long trainerId = getTraineeTrainingsHelper.getTrainerId(trainerName);
         Long trainingTypeId = getTraineeTrainingsHelper.getTrainingTypeId(trainingTypeName);
 
-        List<Training> trainings = getTraineeTrainingsHelper.constructQuery(traineeId, fromDate, toDate, trainerId, trainingTypeId);
+        List<Training> trainings = getTraineeTrainingsHelper.constructQuery(traineeId, fromDate, toDate != null ? DateUtils.addDays(toDate, 1) : null, trainerId, trainingTypeId);
+
+        if (trainerId != null && trainings.isEmpty()) {
+            // Return a message indicating that no trainings were found for the specified trainer
+            return Collections.singletonList(new TrainingDTO("No trainings found for the specified trainer.", null, null, null, null));
+        }
 
         return getTraineeTrainingsHelper.mapToTrainingDTO(trainings);
     }
-
 
 
     @Override
