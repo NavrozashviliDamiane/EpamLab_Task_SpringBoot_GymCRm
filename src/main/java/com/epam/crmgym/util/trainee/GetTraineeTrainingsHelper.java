@@ -10,6 +10,7 @@ import com.epam.crmgym.repository.TrainingRepository;
 import com.epam.crmgym.repository.TrainingTypeRepository;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +21,9 @@ public class GetTraineeTrainingsHelper {
     private final TrainerRepository trainerRepository;
     private final TrainingTypeRepository trainingTypeRepository;
     private final TrainingRepository trainingRepository;
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd");
+
 
     public GetTraineeTrainingsHelper(TrainerRepository trainerRepository, TrainingTypeRepository trainingTypeRepository, TrainingRepository trainingRepository) {
         this.trainerRepository = trainerRepository;
@@ -53,48 +57,47 @@ public class GetTraineeTrainingsHelper {
             throw new IllegalArgumentException("Trainee ID cannot be null.");
         }
 
+        // Define variable to hold the query result
         List<Training> trainings;
 
-        if (trainerId != null && fromDate == null && toDate == null && trainingTypeId == null) {
-            if (trainerId == null) {
-                throw new IllegalArgumentException("Trainer ID cannot be null.");
+        // Check if the fromDate is after the toDate
+        if (fromDate != null && toDate != null && fromDate.after(toDate)) {
+            throw new IllegalArgumentException("From Date cannot be after To Date.");
+        }
+
+        // Call the appropriate repository method based on the provided parameters
+        if (fromDate != null && toDate != null) {
+            if (trainerId != null && trainingTypeId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainerId, trainingTypeId, 0);
+            } else if (trainerId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainerId, 0);
+            } else if (trainingTypeId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainingTypeId, 0);
             } else {
-                trainings = trainingRepository.findByTraineeIdAndTrainerId(traineeId, trainerId);
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, 0);
             }
-
-
+        } else if (toDate == null && fromDate != null) {
+            if (trainerId != null && trainingTypeId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainerIdAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainerId, trainingTypeId, 0);
+            } else if (trainerId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainerIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainerId, 0);
+            } else if (trainingTypeId != null) {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainingTypeId, 0);
+            } else {
+                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainingDurationGreaterThan(traineeId, fromDate, 0);
+            }
+        } else if (trainerId != null && trainingTypeId != null) {
+            trainings = trainingRepository.findByTraineeIdAndTrainerIdAndTrainingTypeId(traineeId, trainerId, trainingTypeId);
+        } else if (trainerId != null) {
+            trainings = trainingRepository.findByTraineeIdAndTrainerId(traineeId, trainerId);
+        } else if (trainingTypeId != null) {
+            trainings = trainingRepository.findByTraineeIdAndTrainingTypeId(traineeId, trainingTypeId);
         } else {
-            if (fromDate != null && toDate != null) {
-                if (trainerId != null && trainingTypeId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeId(traineeId, fromDate, toDate, trainerId, trainingTypeId);
-                } else if (trainerId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerId(traineeId, fromDate, toDate, trainerId);
-                } else if (trainingTypeId != null) {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingTypeId(traineeId, fromDate, toDate, trainingTypeId);
-                } else {
-                    trainings = trainingRepository.findByTraineeIdAndTrainingDateBetween(traineeId, fromDate, toDate);
-                }
-            } else {
-                if (toDate != null) {
-                    if (trainerId != null && trainingTypeId != null) {
-                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerIdAndTrainingTypeId(traineeId, toDate, trainerId, trainingTypeId);
-                    } else if (trainerId != null) {
-                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainerId(traineeId, toDate, trainerId);
-                    } else if (trainingTypeId != null) {
-                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBeforeAndTrainingTypeId(traineeId, toDate, trainingTypeId);
-                    } else {
-                        trainings = trainingRepository.findByTraineeIdAndTrainingDateBefore(traineeId, toDate);
-                    }
-                } else {
-                    trainings = trainingRepository.findByTraineeId(traineeId);
-                }
-            }
+            trainings = trainingRepository.findByTraineeId(traineeId);
         }
 
         return trainings;
     }
-
-
 
     public List<TrainingDTO> mapToTrainingDTO(List<Training> trainings) {
         return trainings.stream().map(training -> {

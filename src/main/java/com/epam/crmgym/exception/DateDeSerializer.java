@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,6 +14,7 @@ import java.time.Year;
 import java.util.Calendar;
 import java.util.Date;
 
+@Slf4j
 public class DateDeSerializer extends StdDeserializer<Date> {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
@@ -29,32 +32,28 @@ public class DateDeSerializer extends StdDeserializer<Date> {
     public Date deserialize(JsonParser p, DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
         String value = p.readValueAs(String.class);
-        System.out.println("Input value: " + value);
+        log.info("Input value: " + value);
 
         if (value == null || value.isEmpty()) {
-            return null;
+            throw new IllegalArgumentException("Date of birth cannot be empty");
         }
 
         if (!isValidDateFormat(value)) {
-            System.out.println("Invalid date format. Please use yyyy/MM/dd");
+            log.info("Invalid date format. Please use yyyy/MM/dd");
             throw new IllegalArgumentException("Invalid date format. Please use correct calendar (yyyy/MM/dd) dates");
         }
 
         try {
             Date parsedDate = dateFormat.parse(value);
-            System.out.println("Parsed date: " + parsedDate);
-
-            if (!isValidDate(parsedDate)) {
-                System.out.println("Invalid date. Please provide a valid calendar date.");
-                throw new IllegalArgumentException("Invalid date. Please provide a valid calendar date.");
-            }
+            log.info("Parsed date: " + parsedDate);
 
             return parsedDate;
         } catch (ParseException e) {
-            System.out.println("Exception while parsing date: " + e.getMessage());
+            log.info("Exception while parsing date: " + e.getMessage());
             throw new IllegalArgumentException("Invalid date format. Please use yyyy/MM/dd", e);
         }
     }
+
 
 
     private boolean isValidDateFormat(String date) {

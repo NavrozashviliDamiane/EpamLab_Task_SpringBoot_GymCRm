@@ -1,6 +1,7 @@
 package com.epam.crmgym.dto.training;
 
 import com.epam.crmgym.exception.DateDeSerializer;
+import com.epam.crmgym.validation.ValidTrainingDuration;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -34,6 +35,7 @@ public class TrainingRequest {
     @JsonDeserialize(using = DateDeSerializer.class)
     private Date trainingDate;
 
+    @ValidTrainingDuration
     @NotNull(message = "Training duration is required")
     private Integer trainingDuration;
 

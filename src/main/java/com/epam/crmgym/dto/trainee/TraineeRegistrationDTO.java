@@ -22,6 +22,7 @@ public class TraineeRegistrationDTO {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
+
     @Past(message = "Date of birth must be in the past")
     @JsonDeserialize(using = DateDeSerializer.class)
     private Date dateOfBirth;

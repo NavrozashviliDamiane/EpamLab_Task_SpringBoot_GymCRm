@@ -234,8 +234,6 @@ public class TraineeController {
                 return ResponseEntity.ok(trainings);
             }
 
-
-
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -269,6 +267,39 @@ public class TraineeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
+    @PutMapping("/trainers")
+    public ResponseEntity<?> updateTraineeTrainerList(@RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
+        String traineeUsername = requestDTO.getTraineeUsername();
+        String password = requestDTO.getPassword();
+
+        boolean isAuthenticated = authenticateService.matchUserCredentials(traineeUsername, password);
+        if (!isAuthenticated) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Authentication failed, please provide valid credentials"));
+        }
+
+        try {
+            log.info("REST call made to /api/trainees/trainers endpoint.");
+
+            List<TrainerResponse> updatedTrainers = traineeService.updateTraineeTrainersList(
+                    traineeUsername,
+                    requestDTO.getTrainerUsernames()
+            );
+
+            if (updatedTrainers == null || updatedTrainers.isEmpty()) {
+                String message = "No trainers found or updated for the specified trainee.";
+                return ResponseEntity.ok().body(Collections.singletonMap("message", message));
+            } else {
+                return ResponseEntity.ok(updatedTrainers);
+            }
+        } catch (Exception e) {
+            log.error("Error occurred while processing /api/trainees/trainers endpoint.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "An error occurred while processing the request."));
+        }
+    }
+
 
 
 }

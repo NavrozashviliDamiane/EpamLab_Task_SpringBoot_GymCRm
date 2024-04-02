@@ -40,4 +40,6 @@ public interface TraineeService {
                                               String trainerName, String trainingTypeName);
 
     List<TrainerResponse> updateTraineeTrainerList(String traineeUsername, List<String> trainerUsernames);
+
+    List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames);
 }

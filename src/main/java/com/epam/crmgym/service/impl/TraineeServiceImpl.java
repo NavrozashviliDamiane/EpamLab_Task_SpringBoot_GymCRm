@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -221,7 +222,6 @@ public class TraineeServiceImpl implements TraineeService {
         List<Training> trainings = getTraineeTrainingsHelper.constructQuery(traineeId, fromDate, toDate != null ? DateUtils.addDays(toDate, 1) : null, trainerId, trainingTypeId);
 
         if (trainerId != null && trainings.isEmpty()) {
-            // Return a message indicating that no trainings were found for the specified trainer
             return Collections.singletonList(new TrainingDTO("No trainings found for the specified trainer.", null, null, null, null));
         }
 
@@ -296,6 +296,67 @@ public class TraineeServiceImpl implements TraineeService {
 
         log.info("Updated trainer list retrieved for trainee: {}", traineeUsername);
 
+        return updatedTrainers;
+    }
+
+
+    @Override
+    @Transactional
+    public List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) {
+        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
+        if (trainee == null) {
+            log.info("Trainee not found with username: {}", traineeUsername);
+            return null;
+        }
+
+        Long traineeId = trainee.getId();
+        List<Training> trainings = trainingRepository.findByTraineeId(traineeId);
+
+        // Set to track which training records have been updated
+        Set<Long> updatedTrainingIds = new HashSet<>();
+
+        for (String trainerUsername : trainerUsernames) {
+            Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
+            if (trainer != null) {
+                Long trainerTrainingTypeId = trainer.getTrainingType().getId();
+                for (Training training : trainings) {
+                    if (!updatedTrainingIds.contains(training.getId())) {
+                        Long trainingTrainingTypeId = training.getTrainingType().getId();
+                        // Check if the trainer's training type matches the training's training type
+                        if (trainingTrainingTypeId.equals(trainerTrainingTypeId)) {
+                            training.setTrainer(trainer);
+                            trainingRepository.save(training);
+                            trainingRepository.flush(); // Manually flush changes to the database
+                            updatedTrainingIds.add(training.getId());
+                            break; // Move to the next trainer
+                        }
+                    }
+                }
+            }
+        }
+
+        // Return the updated trainer list
+        List<TrainerResponse> updatedTrainers = getUpdatedTrainers(trainings);
+        log.info("Updated trainer list retrieved for trainee: {}", traineeUsername);
+        return updatedTrainers;
+    }
+
+    // Helper method to create TrainerResponse objects from the updated trainings
+    private List<TrainerResponse> getUpdatedTrainers(List<Training> trainings) {
+        List<TrainerResponse> updatedTrainers = new ArrayList<>();
+        for (Training training : trainings) {
+            if (training.getTrainer() != null) {
+                Trainer trainer = trainerRepository.findById(training.getTrainer().getId()).orElse(null);
+                if (trainer != null) {
+                    TrainerResponse trainerResponse = new TrainerResponse();
+                    trainerResponse.setUsername(trainer.getUser().getUsername());
+                    trainerResponse.setFirstName(trainer.getUser().getFirstName());
+                    trainerResponse.setLastName(trainer.getUser().getLastName());
+                    trainerResponse.setSpecialization(training.getTrainingType().getTrainingType().toString());
+                    updatedTrainers.add(trainerResponse);
+                }
+            }
+        }
         return updatedTrainers;
     }
 
