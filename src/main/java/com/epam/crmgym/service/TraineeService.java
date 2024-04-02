@@ -4,6 +4,7 @@ import com.epam.crmgym.dto.trainee.TraineeProfileDTO;
 import com.epam.crmgym.dto.trainer.TrainerResponse;
 import com.epam.crmgym.dto.training.TrainingDTO;
 import com.epam.crmgym.entity.Trainee;
+import com.epam.crmgym.exception.EntityNotFoundException;
 import com.epam.crmgym.exception.UsernameValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,6 @@ public interface TraineeService {
     List<TrainingDTO> getTraineeTrainingsList(String username, String password, Date fromDate, Date toDate,
                                               String trainerName, String trainingTypeName);
 
-    List<TrainerResponse> updateTraineeTrainerList(String traineeUsername, List<String> trainerUsernames);
 
-    List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames);
+    List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) throws EntityNotFoundException;
 }

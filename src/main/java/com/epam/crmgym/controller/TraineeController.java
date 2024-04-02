@@ -4,15 +4,13 @@ package com.epam.crmgym.controller;
 
 import com.epam.crmgym.dto.trainee.*;
 import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
-import com.epam.crmgym.exception.BindingResultError;
-import com.epam.crmgym.exception.UsernameValidationException;
+import com.epam.crmgym.exception.*;
 import com.epam.crmgym.repository.TraineeRepository;
 import lombok.extern.slf4j.Slf4j;
 import com.epam.crmgym.dto.trainer.TrainerResponse;
 import com.epam.crmgym.dto.training.TrainingDTO;
 import com.epam.crmgym.dto.user.UserCredentialsDTO;
 import com.epam.crmgym.entity.Trainee;
-import com.epam.crmgym.exception.AuthenticationException;
 import com.epam.crmgym.mapper.TraineeMapper;
 import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TraineeService;
@@ -245,31 +243,8 @@ public class TraineeController {
     }
 
 
-
-
-    @PutMapping("/update-trainers")
-    public ResponseEntity<List<TrainerResponse>> updateTraineeTrainerList(
-            @RequestBody UpdateTraineeTrainerListRequest request) {
-        String traineeUsername = request.getTraineeUsername();
-        String traineePassword = request.getTraineePassword();
-        List<String> trainerUsernames = request.getTrainerUsernames();
-
-        authenticateService.matchUserCredentials(traineeUsername, traineePassword);
-
-        log.info("Received request to update trainer list for trainee: {}", traineeUsername);
-
-        List<TrainerResponse> updatedTrainers = traineeService.updateTraineeTrainerList(traineeUsername, trainerUsernames);
-        if (updatedTrainers != null) {
-            log.info("Trainer list updated successfully for trainee: {}", traineeUsername);
-            return ResponseEntity.ok(updatedTrainers);
-        } else {
-            log.warn("Trainee not found with username: {}", traineeUsername);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
-
     @PutMapping("/trainers")
-    public ResponseEntity<?> updateTraineeTrainerList(@RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
+    public ResponseEntity<?> updateTraineeTrainerList(@Validated @RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
         String traineeUsername = requestDTO.getTraineeUsername();
         String password = requestDTO.getPassword();
 
@@ -293,12 +268,28 @@ public class TraineeController {
             } else {
                 return ResponseEntity.ok(updatedTrainers);
             }
+        } catch (TraineeNotFoundException e) {
+            log.error("Trainee not found with username: {}", traineeUsername, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "Trainee not found with username: " + traineeUsername));
+        } catch (InvalidTrainersException e) {
+            log.error("Number of trainers provided exceeds the number of available trainings for trainee: {}", traineeUsername, e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("error", "Number of trainers provided exceeds the number of available trainings"));
+        } catch (TrainerNotFoundException e) {
+            log.error("Trainer not found with username: {}",  e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "Trainer not found from the provided list " ));
+        }   catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             log.error("Error occurred while processing /api/trainees/trainers endpoint.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", "An error occurred while processing the request."));
         }
     }
+
+
 
 
 

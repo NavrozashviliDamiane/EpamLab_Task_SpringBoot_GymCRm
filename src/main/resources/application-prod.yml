@@ -14,3 +14,25 @@ spring:
 
   profiles:
     active: development
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    metrics:
+      enabled: true
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+
+
+
+
+
+
+
+
+

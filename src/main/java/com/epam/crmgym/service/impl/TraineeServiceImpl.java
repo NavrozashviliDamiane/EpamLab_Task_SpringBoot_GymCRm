@@ -8,8 +8,9 @@ import com.epam.crmgym.entity.Trainee;
 import com.epam.crmgym.entity.Trainer;
 import com.epam.crmgym.entity.Training;
 import com.epam.crmgym.entity.User;
-import com.epam.crmgym.exception.UsernameValidationException;
+import com.epam.crmgym.exception.*;
 import com.epam.crmgym.mapper.TrainingToTrainerMapper;
+import com.epam.crmgym.metrics.CustomMetrics;
 import com.epam.crmgym.repository.TraineeRepository;
 import com.epam.crmgym.repository.TrainerRepository;
 import com.epam.crmgym.repository.TrainingRepository;
@@ -19,6 +20,8 @@ import com.epam.crmgym.service.TraineeService;
 import com.epam.crmgym.service.TrainingService;
 import com.epam.crmgym.service.UserService;
 import com.epam.crmgym.util.trainee.GetTraineeTrainingsHelper;
+import com.epam.crmgym.util.trainee.UpdateTraineeTrainersListHelper;
+import io.micrometer.core.instrument.Counter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +47,23 @@ public class TraineeServiceImpl implements TraineeService {
 
     private final TrainingTypeRepository trainingTypeRepository;
 
+    private final UpdateTraineeTrainersListHelper updateTraineeTrainersListHelper;
+
     private final TrainerRepository trainerRepository;
 
     private final TrainingRepository trainingRepository;
+
+    private final CustomMetrics customMetrics;
+
 
     @Autowired
     public TraineeServiceImpl(TraineeRepository traineeRepository, UserService userService,
                               AuthenticateService authenticateService,
                               TrainingService trainingService, TrainingRepository trainingRepository,
                               TrainerRepository trainerRepository, TrainingTypeRepository trainingTypeRepository,
-                              TrainingToTrainerMapper trainingToTrainerMapper, GetTraineeTrainingsHelper getTraineeTrainingsHelper
+                              TrainingToTrainerMapper trainingToTrainerMapper,
+                              GetTraineeTrainingsHelper getTraineeTrainingsHelper, UpdateTraineeTrainersListHelper updateTraineeTrainersListHelper,
+                              CustomMetrics customMetrics
     ) {
         this.traineeRepository = traineeRepository;
         this.userService = userService;
@@ -64,11 +74,16 @@ public class TraineeServiceImpl implements TraineeService {
         this.trainingTypeRepository = trainingTypeRepository;
         this.trainingToTrainerMapper = trainingToTrainerMapper;
         this.getTraineeTrainingsHelper = getTraineeTrainingsHelper;
+        this.updateTraineeTrainersListHelper = updateTraineeTrainersListHelper;
+        this.customMetrics = customMetrics;
     }
 
 
     @Override
     public TraineeProfileDTO getTraineeProfile(String username) {
+        Counter traineeProfileCounter = customMetrics.getTraineeProfileCounter();
+        traineeProfileCounter.increment();
+
         log.info("Fetching trainee profile for username: {}", username);
         try {
             Trainee trainee = traineeRepository.findByUserUsername(username);
@@ -229,136 +244,62 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
 
-    @Override
-    public List<TrainerResponse> updateTraineeTrainerList(String traineeUsername, List<String> trainerUsernames) {
-        log.info("Updating trainee's trainer list for trainee: {}", traineeUsername);
 
-        // Find the trainee by username
-        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
-        if (trainee == null) {
-            log.info("Trainee not found with username: {}", traineeUsername);
-            return null;
-        }
-
-        Long traineeId = trainee.getId();
-        log.info("Trainee found with ID: {}", traineeId);
-
-        // Retrieve the trainings associated with the trainee
-        List<Training> trainings = trainingRepository.findByTraineeId(traineeId);
-        log.info("Found {} trainings associated with trainee", trainings.size());
-
-        // Iterate over the list of trainer usernames
-        for (String trainerUsername : trainerUsernames) {
-            // Find the trainer by username
-            Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
-            if (trainer != null) {
-                log.info("Trainer found with username: {}", trainerUsername);
-                Long trainerTrainingTypeId = trainer.getTrainingType().getId();
-
-                // Iterate over the trainings associated with the trainee
-                for (Training training : trainings) {
-                    // Check if the training has already been updated by another trainer
-                    if (training.getTrainer() != null) {
-                        continue; // Skip to the next training if it has been updated
-                    }
-
-                    Long trainingTrainingTypeId = training.getTrainingType().getId();
-                    // Update the training if it matches the trainer's training type
-                    if (trainingTrainingTypeId.equals(trainerTrainingTypeId)) {
-                        training.setTrainer(trainer);
-                        trainingRepository.save(training);
-                        log.info("Training updated with new trainer: {}", trainer.getUser());
-                        break; // Break out of the loop after updating one training
-                    }
-                }
-            }
-        }
-
-        // Create a list to store the updated trainers' responses
-        List<TrainerResponse> updatedTrainers = new ArrayList<>();
-        // Iterate over the updated trainings
-        for (Training training : trainings) {
-            // If the training has been updated with a trainer
-            if (training.getTrainer() != null) {
-                // Get the trainer associated with the training
-                Trainer trainer = trainerRepository.findById(training.getTrainer().getId()).orElse(null);
-                if (trainer != null) {
-                    // Create a TrainerResponse object and add it to the list
-                    TrainerResponse trainerResponse = new TrainerResponse();
-                    trainerResponse.setUsername(trainer.getUser().getUsername());
-                    trainerResponse.setFirstName(trainer.getUser().getFirstName());
-                    trainerResponse.setLastName(trainer.getUser().getLastName());
-                    trainerResponse.setSpecialization(training.getTrainingType().getTrainingType().toString());
-                    updatedTrainers.add(trainerResponse);
-                }
-            }
-        }
-
-        log.info("Updated trainer list retrieved for trainee: {}", traineeUsername);
-
-        return updatedTrainers;
-    }
 
 
     @Override
     @Transactional
-    public List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) {
+    public List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) throws TraineeNotFoundException, InvalidTrainersException, TrainerNotFoundException {
         Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
         if (trainee == null) {
             log.info("Trainee not found with username: {}", traineeUsername);
-            return null;
+            throw new TraineeNotFoundException("Trainee not found with username: " + traineeUsername);
         }
 
         Long traineeId = trainee.getId();
         List<Training> trainings = trainingRepository.findByTraineeId(traineeId);
 
-        // Set to track which training records have been updated
+        if (trainerUsernames.size() > trainings.size()) {
+            log.warn("Number of trainers provided exceeds the number of available trainings for trainee: {}", traineeUsername);
+            throw new InvalidTrainersException("Number of trainers provided exceeds the number of available trainings");
+        }
+
         Set<Long> updatedTrainingIds = new HashSet<>();
 
         for (String trainerUsername : trainerUsernames) {
             Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
-            if (trainer != null) {
-                Long trainerTrainingTypeId = trainer.getTrainingType().getId();
-                for (Training training : trainings) {
-                    if (!updatedTrainingIds.contains(training.getId())) {
-                        Long trainingTrainingTypeId = training.getTrainingType().getId();
-                        // Check if the trainer's training type matches the training's training type
-                        if (trainingTrainingTypeId.equals(trainerTrainingTypeId)) {
-                            training.setTrainer(trainer);
-                            trainingRepository.save(training);
-                            trainingRepository.flush(); // Manually flush changes to the database
-                            updatedTrainingIds.add(training.getId());
-                            break; // Move to the next trainer
-                        }
+            if (trainer == null) {
+                log.warn("Trainer not found with username: {}", trainerUsername);
+                throw new TrainerNotFoundException("Trainer not found with username: " + trainerUsername);
+            }
+
+            Long trainerTrainingTypeId = trainer.getTrainingType().getId();
+            boolean trainerAssigned = false;
+            for (Training training : trainings) {
+                if (!updatedTrainingIds.contains(training.getId())) {
+                    Long trainingTrainingTypeId = training.getTrainingType().getId();
+                    if (trainingTrainingTypeId.equals(trainerTrainingTypeId)) {
+                        training.setTrainer(trainer);
+                        trainingRepository.save(training);
+                        trainingRepository.flush();
+                        updatedTrainingIds.add(training.getId());
+                        trainerAssigned = true;
+                        break;
                     }
                 }
             }
+
+            if (!trainerAssigned) {
+                throw new InvalidTrainersException("No available training found for trainer: " + trainerUsername);
+            }
         }
 
-        // Return the updated trainer list
-        List<TrainerResponse> updatedTrainers = getUpdatedTrainers(trainings);
+        List<TrainerResponse> updatedTrainers = updateTraineeTrainersListHelper.getUpdatedTrainers(trainings, trainerRepository);
         log.info("Updated trainer list retrieved for trainee: {}", traineeUsername);
         return updatedTrainers;
     }
 
-    // Helper method to create TrainerResponse objects from the updated trainings
-    private List<TrainerResponse> getUpdatedTrainers(List<Training> trainings) {
-        List<TrainerResponse> updatedTrainers = new ArrayList<>();
-        for (Training training : trainings) {
-            if (training.getTrainer() != null) {
-                Trainer trainer = trainerRepository.findById(training.getTrainer().getId()).orElse(null);
-                if (trainer != null) {
-                    TrainerResponse trainerResponse = new TrainerResponse();
-                    trainerResponse.setUsername(trainer.getUser().getUsername());
-                    trainerResponse.setFirstName(trainer.getUser().getFirstName());
-                    trainerResponse.setLastName(trainer.getUser().getLastName());
-                    trainerResponse.setSpecialization(training.getTrainingType().getTrainingType().toString());
-                    updatedTrainers.add(trainerResponse);
-                }
-            }
-        }
-        return updatedTrainers;
-    }
+
 
 
 }

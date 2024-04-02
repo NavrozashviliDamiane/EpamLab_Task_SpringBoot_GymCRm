@@ -57,15 +57,12 @@ public class GetTraineeTrainingsHelper {
             throw new IllegalArgumentException("Trainee ID cannot be null.");
         }
 
-        // Define variable to hold the query result
         List<Training> trainings;
 
-        // Check if the fromDate is after the toDate
         if (fromDate != null && toDate != null && fromDate.after(toDate)) {
             throw new IllegalArgumentException("From Date cannot be after To Date.");
         }
 
-        // Call the appropriate repository method based on the provided parameters
         if (fromDate != null && toDate != null) {
             if (trainerId != null && trainingTypeId != null) {
                 trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainerId, trainingTypeId, 0);
