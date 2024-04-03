@@ -10,7 +10,6 @@ import com.epam.crmgym.entity.Training;
 import com.epam.crmgym.entity.User;
 import com.epam.crmgym.exception.*;
 import com.epam.crmgym.mapper.TrainingToTrainerMapper;
-import com.epam.crmgym.metrics.CustomMetrics;
 import com.epam.crmgym.repository.TraineeRepository;
 import com.epam.crmgym.repository.TrainerRepository;
 import com.epam.crmgym.repository.TrainingRepository;
@@ -53,7 +52,6 @@ public class TraineeServiceImpl implements TraineeService {
 
     private final TrainingRepository trainingRepository;
 
-    private final CustomMetrics customMetrics;
 
 
     @Autowired
@@ -62,8 +60,7 @@ public class TraineeServiceImpl implements TraineeService {
                               TrainingService trainingService, TrainingRepository trainingRepository,
                               TrainerRepository trainerRepository, TrainingTypeRepository trainingTypeRepository,
                               TrainingToTrainerMapper trainingToTrainerMapper,
-                              GetTraineeTrainingsHelper getTraineeTrainingsHelper, UpdateTraineeTrainersListHelper updateTraineeTrainersListHelper,
-                              CustomMetrics customMetrics
+                              GetTraineeTrainingsHelper getTraineeTrainingsHelper, UpdateTraineeTrainersListHelper updateTraineeTrainersListHelper
     ) {
         this.traineeRepository = traineeRepository;
         this.userService = userService;
@@ -75,14 +72,11 @@ public class TraineeServiceImpl implements TraineeService {
         this.trainingToTrainerMapper = trainingToTrainerMapper;
         this.getTraineeTrainingsHelper = getTraineeTrainingsHelper;
         this.updateTraineeTrainersListHelper = updateTraineeTrainersListHelper;
-        this.customMetrics = customMetrics;
     }
 
 
     @Override
     public TraineeProfileDTO getTraineeProfile(String username) {
-        Counter traineeProfileCounter = customMetrics.getTraineeProfileCounter();
-        traineeProfileCounter.increment();
 
         log.info("Fetching trainee profile for username: {}", username);
         try {

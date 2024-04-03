@@ -25,7 +25,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PutMapping("/change-password")
+    @PutMapping
     public ResponseEntity<String> changePassword(@Validated @RequestBody ChangePasswordRequest request) {
 
         log.info("REST call made to /api/users/change-password endpoint. Request: {}", request);

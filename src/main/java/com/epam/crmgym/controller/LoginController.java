@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
-@RequestMapping("/api")
+@RequestMapping("/api/login")
 public class LoginController {
 
     private final AuthenticateService authenticateService;
@@ -20,7 +20,7 @@ public class LoginController {
         this.authenticateService = authenticateService;
     }
 
-    @GetMapping("/login")
+    @GetMapping
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
         boolean isAuthenticated = authenticateService.matchUserCredentials(loginRequest.getUsername(), loginRequest.getPassword());
 

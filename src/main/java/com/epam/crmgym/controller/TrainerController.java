@@ -10,7 +10,6 @@ import com.epam.crmgym.dto.trainer.*;
 import com.epam.crmgym.entity.Trainer;
 import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TrainerService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 
@@ -44,7 +42,7 @@ public class TrainerController {
         this.trainerRepository = trainerRepository;
     }
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<?> registerTrainer(@Validated @RequestBody TrainerRegistrationRequest request, BindingResult bindingResult) {
         log.info("REST call made to /api/trainers/register endpoint. Request: {}", request);
 
@@ -73,7 +71,7 @@ public class TrainerController {
         }
     }
 
-    @GetMapping("/get-profile")
+    @GetMapping
     public ResponseEntity<?> getTrainerProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
         String username = userCredentials.getUsername();
         String password = userCredentials.getPassword();
@@ -94,7 +92,7 @@ public class TrainerController {
     }
 
 
-    @PutMapping("/update-profile")
+    @PutMapping
     public ResponseEntity<?> updateTrainerProfile(@Validated @RequestBody TrainerUpdateDTO trainerUpdateDTO) {
 
         String username = trainerUpdateDTO.getUsername();
@@ -115,7 +113,7 @@ public class TrainerController {
         }
     }
 
-    @PatchMapping("/update-trainer-status")
+    @PatchMapping
     public ResponseEntity<String> updateTrainerStatus(@Validated @RequestBody UpdateUserStatusRequestDTO requestDTO) {
         boolean authenticated = authenticateService.matchUserCredentials(requestDTO.getUsername(), requestDTO.getPassword());
         if (!authenticated) {
@@ -161,7 +159,7 @@ public class TrainerController {
     }
 
 
-    @GetMapping("/trainer/trainings")
+    @GetMapping("/trainings")
     public ResponseEntity<?> getTrainerTrainings(
             @RequestBody TrainerTrainingsRequestDTO request
     ) {

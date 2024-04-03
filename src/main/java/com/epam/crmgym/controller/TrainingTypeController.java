@@ -3,8 +3,6 @@ package com.epam.crmgym.controller;
 import com.epam.crmgym.dto.training.TrainingTypeDTO;
 import com.epam.crmgym.dto.user.UserCredentialsDTO;
 import com.epam.crmgym.entity.TrainingType;
-import com.epam.crmgym.exception.AuthenticationException;
-import com.epam.crmgym.exception.UnauthorizedAccessException;
 import com.epam.crmgym.mapper.TrainingTypeMapper;
 import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TrainingTypeService;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +39,7 @@ public class TrainingTypeController {
         this.authenticateService = authenticateService;
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<?> getTrainingTypes(@Validated @RequestBody UserCredentialsDTO credentialsDTO) {
         boolean authenticated = authenticateService.matchUserCredentials(credentialsDTO.getUsername(), credentialsDTO.getPassword());
         if (!authenticated) {

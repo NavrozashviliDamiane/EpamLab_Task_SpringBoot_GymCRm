@@ -1,7 +1,6 @@
 package com.epam.crmgym.controller;
 
 
-
 import com.epam.crmgym.dto.trainee.*;
 import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
 import com.epam.crmgym.exception.*;
@@ -53,7 +52,7 @@ public class TraineeController {
         this.traineeRepository = traineeRepository;
     }
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<?> registerTrainee(@Validated @RequestBody TraineeRegistrationDTO registrationDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<String> validationErrors = bindingResultError.handleBindingResultErrors(bindingResult);
@@ -94,7 +93,7 @@ public class TraineeController {
 
 
 
-    @GetMapping("/get-profile")
+    @GetMapping
     public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
         String username = userCredentials.getUsername();
         String password = userCredentials.getPassword();
@@ -123,7 +122,7 @@ public class TraineeController {
 
 
 
-    @PutMapping("/update-profile")
+    @PutMapping
     public ResponseEntity<?> updateTraineeProfile(@Validated @RequestBody TraineeUpdateDTO updateDTO) {
         String username = updateDTO.getUsername();
         String password = updateDTO.getPassword();
@@ -157,7 +156,7 @@ public class TraineeController {
 
 
 
-    @DeleteMapping("/delete-profile")
+    @DeleteMapping
     public ResponseEntity<?> deleteTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
         String username = userCredentials.getUsername();
         String password = userCredentials.getPassword();
@@ -181,7 +180,7 @@ public class TraineeController {
         }
     }
 
-    @PatchMapping("/update-trainee-status")
+    @PatchMapping
     public ResponseEntity<String> updateTraineeStatus(@Validated @RequestBody UpdateUserStatusRequestDTO requestDTO) {
         boolean authenticated = authenticateService.matchUserCredentials(requestDTO.getUsername(), requestDTO.getPassword());
         if (!authenticated) {
@@ -211,7 +210,7 @@ public class TraineeController {
 
 
 
-    @GetMapping("/trainings")
+    @GetMapping("trainings-list")
     public ResponseEntity<?> getTraineeTrainingsList(@Validated @RequestBody TraineeTrainingsRequestDTO requestDTO) {
         try {
             log.info("REST call made to /api/trainees/trainings endpoint. Request: {} {}", requestDTO.getUsername(), requestDTO.getPassword());
@@ -243,7 +242,7 @@ public class TraineeController {
     }
 
 
-    @PutMapping("/trainers")
+    @PutMapping("/trainer-list")
     public ResponseEntity<?> updateTraineeTrainerList(@Validated @RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
         String traineeUsername = requestDTO.getTraineeUsername();
         String password = requestDTO.getPassword();
@@ -288,9 +287,4 @@ public class TraineeController {
                     .body(Collections.singletonMap("error", "An error occurred while processing the request."));
         }
     }
-
-
-
-
-
 }
