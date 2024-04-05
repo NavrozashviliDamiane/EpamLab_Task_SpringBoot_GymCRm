@@ -1,6 +1,5 @@
 package com.epam.crmgym.controller;
 
-
 import com.epam.crmgym.dto.user.LoginRequest;
 import com.epam.crmgym.service.AuthenticateService;
 import jakarta.validation.Valid;

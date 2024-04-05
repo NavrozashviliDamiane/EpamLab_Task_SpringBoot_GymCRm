@@ -15,6 +15,7 @@ import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TraineeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -93,32 +94,42 @@ public class TraineeController {
 
 
 
-    @GetMapping
-    public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
-        String username = userCredentials.getUsername();
-        String password = userCredentials.getPassword();
-
-        log.info("REST call made to /api/trainees/get-profile endpoint. Request: {} {}", username, password);
+    @PostMapping(value = "/fortest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody(required = false) UserCredentialsDTO userCredentials) {
+        if (userCredentials == null) {
+            log.error("Request body is missing");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Request body is missing");
+        }
 
         try {
-            boolean isAuthenticated = authenticateService.matchUserCredentials(username, password);
-            log.info("User Authenticated Successfully");
+            log.info("Received request to fetch trainee profile for username: {}", userCredentials.getUsername());
 
-            if (isAuthenticated) {
-                TraineeProfileDTO profileDTO = traineeService.getTraineeProfile(username);
+            // Log the request body
+            log.info("Request body: {}", userCredentials);
+
+            String username = userCredentials.getUsername();
+            String password = userCredentials.getPassword();
+
+            // Add more detailed logging if needed
+
+            // Retrieve trainee profile data
+            TraineeProfileDTO profileDTO = traineeService.getTraineeProfile(username);
+
+            if (profileDTO != null) {
+                log.info("Trainee profile found for username: {}", username);
                 return ResponseEntity.ok(profileDTO);
             } else {
-                log.error("Authentication failed for user: {}", username);
-                throw new AuthenticationException("Invalid username or password");
+                log.info("Trainee profile not found for username: {}", username);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Trainee profile not found");
             }
-        } catch (AuthenticationException e) {
-            log.error("Authentication failed for user: {}", username, e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         } catch (Exception e) {
-            log.info("Error occurred while processing /api/trainees/register endpoint.", e);
+            log.error("Error occurred while fetching trainee profile", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
+
+
 
 
 

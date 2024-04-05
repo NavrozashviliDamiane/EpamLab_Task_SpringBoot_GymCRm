@@ -19,4 +19,5 @@ public interface UserService {
     User saveUser(User user);
 
     void changePassword(ChangePasswordRequest request);
+
 }
