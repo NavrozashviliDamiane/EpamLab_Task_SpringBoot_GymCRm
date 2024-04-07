@@ -94,13 +94,13 @@ public class TraineeController {
 
 
 
-    @PostMapping(value = "/fortest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/fortest")
     public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody(required = false) UserCredentialsDTO userCredentials) {
-        if (userCredentials == null) {
-            log.error("Request body is missing");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Request body is missing");
-        }
+//        if (userCredentials == null) {
+//            log.error("Request body is missing");
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body("Request body is missing");
+//        }
 
         try {
             log.info("Received request to fetch trainee profile for username: {}", userCredentials.getUsername());

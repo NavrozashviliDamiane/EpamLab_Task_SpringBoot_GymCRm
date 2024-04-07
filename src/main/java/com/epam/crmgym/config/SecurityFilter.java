@@ -1,7 +1,5 @@
 package com.epam.crmgym.config;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +29,7 @@ public class SecurityFilter {
                         .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
                         .requestMatchers("/error").permitAll()
                         // Adjust the endpoints according to your project logic
-                        .requestMatchers(HttpMethod.GET, "/trainees/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/trainees/fortest").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/trainees/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/trainees/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/trainers/**").authenticated()
@@ -39,7 +37,6 @@ public class SecurityFilter {
                         .requestMatchers(HttpMethod.DELETE, "/trainers/**").authenticated()
                         .anyRequest().denyAll()
                 ).csrf(csrf -> csrf.disable());
-
 
         return http.build();
     }
