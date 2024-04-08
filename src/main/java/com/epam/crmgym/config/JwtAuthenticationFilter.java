@@ -1,8 +1,8 @@
 package com.epam.crmgym.config;
 
+import com.epam.crmgym.repository.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -27,11 +27,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private Map<String, Integer> unsuccessfulLoginAttempts;
+
+    @Autowired
+    private Map<String, Long> blockedIPs;
+
+    private static final long BLOCK_DURATION = 5 * 60 * 1000; // 5 minutes
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(request);
 
         String authHeader = request.getHeader("Authorization");
+
+        String clientIP = getClientIP(request);
+
+        if (isIPBlocked(clientIP)) {
+            log.warn("IP '{}' is blocked due to too many unsuccessful login attempts.", clientIP);
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            return;
+        }
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String jwt = authHeader.substring(7);
@@ -71,4 +90,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(wrappedRequest, response);
     }
 
+    private String getClientIP(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        return xfHeader != null ? xfHeader.split(",")[0] : request.getRemoteAddr();
+    }
+
+    private boolean isIPBlocked(String clientIP) {
+        Long unblockTime = blockedIPs.get(clientIP);
+        return unblockTime != null && unblockTime > System.currentTimeMillis();
+    }
 }

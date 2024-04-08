@@ -42,7 +42,7 @@ public class TrainerController {
         this.trainerRepository = trainerRepository;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> registerTrainer(@Validated @RequestBody TrainerRegistrationRequest request, BindingResult bindingResult) {
         log.info("REST call made to /api/trainers/register endpoint. Request: {}", request);
 

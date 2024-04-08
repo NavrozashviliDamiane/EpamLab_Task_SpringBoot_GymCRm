@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @Slf4j
-@RequestMapping("/api/auth")
+@RequestMapping("/api/authentication")
 public class AuthenticateController {
 
     private final JwtService jwtService;
@@ -79,7 +79,7 @@ public class AuthenticateController {
     public ResponseEntity<String> logout(HttpServletRequest request) {
         String token = jwtService.extractTokenFromRequest(request);
         if (token != null) {
-            jwtService.blacklistToken(token); // Add the token to the blacklist
+            jwtService.blacklistToken(token);
             log.info("JWT token blacklisted successfully: {}", token);
             return ResponseEntity.ok("Logged out successfully");
         } else {

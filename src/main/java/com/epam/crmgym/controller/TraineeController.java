@@ -53,7 +53,7 @@ public class TraineeController {
         this.traineeRepository = traineeRepository;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> registerTrainee(@Validated @RequestBody TraineeRegistrationDTO registrationDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             List<String> validationErrors = bindingResultError.handleBindingResultErrors(bindingResult);
