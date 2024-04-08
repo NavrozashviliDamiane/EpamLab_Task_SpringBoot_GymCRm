@@ -25,10 +25,11 @@ public class SecurityFilter {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/authenticate").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/trainees").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/users").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // Adjust the endpoints according to your project logic
                         .requestMatchers(HttpMethod.POST, "/api/trainees/fortest").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/trainees/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/trainees/**").authenticated()

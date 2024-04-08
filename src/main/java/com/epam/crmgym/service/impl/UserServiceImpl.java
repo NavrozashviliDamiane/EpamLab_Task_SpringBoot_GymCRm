@@ -38,15 +38,17 @@ public class UserServiceImpl implements UserService {
         String username = usernameGenerator.generateUsername(firstName, lastName);
 
         String password = PasswordGenerator.generatePassword(10);
+        String salt = PasswordGenerator.generateSalt();
+        String hashedPassword = PasswordGenerator.hashPasswordWithSalt(password, salt);
 
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUsername(username);
-        user.setPassword(password);
+        user.setPassword(hashedPassword);
         user.setActive(true);
 
-        User createdUser =  userRepository.save(user);
+        User createdUser = userRepository.save(user);
 
         log.info("User Created Successfully");
 

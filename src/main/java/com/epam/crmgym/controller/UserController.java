@@ -34,7 +34,7 @@ public class UserController {
             userService.changePassword(request);
             return ResponseEntity.ok("Password changed successfully");
         } catch (Exception e) {
-            log.info("\"Error occurred while processing /api/users/change-password endpoint.\", e");
+            log.error("Error occurred while processing /api/users/change-password endpoint.", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

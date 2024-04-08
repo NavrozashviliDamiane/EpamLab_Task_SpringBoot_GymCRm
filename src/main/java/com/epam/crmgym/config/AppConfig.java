@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Configuration
 public class AppConfig {
 
@@ -15,5 +18,15 @@ public class AppConfig {
         messageSource.setBasename("classpath:validation");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
+    }
+
+    @Bean
+    public Map<String, Integer> unsuccessfulLoginAttempts() {
+        return new ConcurrentHashMap<>();
+    }
+
+    @Bean
+    public Map<String, Long> blockedIPs() {
+        return new ConcurrentHashMap<>();
     }
 }

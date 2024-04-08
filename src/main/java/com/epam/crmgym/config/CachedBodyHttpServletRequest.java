@@ -1,57 +1,38 @@
 package com.epam.crmgym.config;
 
-import jakarta.servlet.*;
+import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.util.ContentCachingRequestWrapper;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StreamUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class CachedBodyHttpServletRequest extends ContentCachingRequestWrapper {
+@Slf4j
+@Getter
+public class CachedBodyHttpServletRequest extends HttpServletRequestWrapper {
 
-    public CachedBodyHttpServletRequest(HttpServletRequest request) {
+    private final byte[] requestBody;
+
+    public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
         super(request);
+        InputStream requestInputStream = request.getInputStream();
+        this.requestBody = StreamUtils.copyToByteArray(requestInputStream);
     }
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        return new CachedBodyServletInputStream(this.getContentAsByteArray());
+        return new CachedBodyServletInputStream(new ByteArrayInputStream(this.requestBody));
     }
 
     @Override
     public BufferedReader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(this.getInputStream()));
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.requestBody);
+        return new BufferedReader(new InputStreamReader(byteArrayInputStream));
     }
 }
-
-class CachedBodyServletInputStream extends ServletInputStream {
-
-    private final ByteArrayInputStream inputStream;
-
-    public CachedBodyServletInputStream(byte[] cachedBody) {
-        this.inputStream = new ByteArrayInputStream(cachedBody);
-    }
-
-    @Override
-    public int read() throws IOException {
-        return inputStream.read();
-    }
-
-    @Override
-    public boolean isFinished() {
-        return inputStream.available() == 0;
-    }
-
-    @Override
-    public boolean isReady() {
-        return true;
-    }
-
-    @Override
-    public void setReadListener(ReadListener listener) {
-        throw new UnsupportedOperationException();
-    }
-}
-
