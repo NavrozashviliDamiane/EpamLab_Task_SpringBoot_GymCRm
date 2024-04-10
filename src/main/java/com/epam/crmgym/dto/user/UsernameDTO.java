@@ -1,20 +1,17 @@
 package com.epam.crmgym.dto.user;
 
-import com.epam.crmgym.validation.RequiredBoolean;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class UpdateUserStatusRequestDTO {
+public class UsernameDTO {
 
     @NotNull(message = "Username is required")
     @NotBlank(message = "Username is required")
     private String username;
 
-
-    @NotNull(message = "Status field is required")
-    @RequiredBoolean(message = "Status field is required")
-    private Boolean isActive;
 }
+

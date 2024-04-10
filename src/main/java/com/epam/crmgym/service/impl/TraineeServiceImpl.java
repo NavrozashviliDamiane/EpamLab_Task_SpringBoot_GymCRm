@@ -113,7 +113,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     @Transactional
-    public Trainee updateTraineeProfile(String username, String firstName, String password, String lastName,
+    public Trainee updateTraineeProfile(String username, String firstName, String lastName,
                                         Date dateOfBirth, String address, Boolean isActive) {
 
         String transactionId = UUID.randomUUID().toString();
@@ -121,7 +121,6 @@ public class TraineeServiceImpl implements TraineeService {
 
         try {
 
-            authenticateService.matchUserCredentials(username, password);
             Trainee trainee = traineeRepository.findByUserUsername(username);
 
             if (trainee != null) {
@@ -213,10 +212,9 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public List<TrainingDTO> getTraineeTrainingsList(String username, String password, Date fromDate, Date toDate,
+    public List<TrainingDTO> getTraineeTrainingsList(String username, Date fromDate, Date toDate,
                                                      String trainerName, String trainingTypeName) {
 
-        authenticateService.matchUserCredentials(username, password);
 
         Trainee trainee = traineeRepository.findByUserUsername(username);
         if (trainee == null) {

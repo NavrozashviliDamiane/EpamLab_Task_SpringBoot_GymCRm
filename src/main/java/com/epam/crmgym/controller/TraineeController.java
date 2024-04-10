@@ -2,20 +2,20 @@ package com.epam.crmgym.controller;
 
 
 import com.epam.crmgym.dto.trainee.*;
-import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
-import com.epam.crmgym.exception.*;
-import com.epam.crmgym.repository.TraineeRepository;
-import lombok.extern.slf4j.Slf4j;
 import com.epam.crmgym.dto.trainer.TrainerResponse;
 import com.epam.crmgym.dto.training.TrainingDTO;
+import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
 import com.epam.crmgym.dto.user.UserCredentialsDTO;
+import com.epam.crmgym.dto.user.UsernameDTO;
 import com.epam.crmgym.entity.Trainee;
+import com.epam.crmgym.exception.*;
 import com.epam.crmgym.mapper.TraineeMapper;
+import com.epam.crmgym.repository.TraineeRepository;
 import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.TraineeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -64,7 +64,6 @@ public class TraineeController {
         }
 
 
-
         log.info("REST call made to /api/trainees/register endpoint. Request: {}", registrationDTO);
 
         try {
@@ -92,28 +91,18 @@ public class TraineeController {
     }
 
 
+    @GetMapping()
+    public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody UsernameDTO usernameDTO) {
 
-
-    @PostMapping("/fortest")
-    public ResponseEntity<?> getTraineeProfile(@Validated @RequestBody(required = false) UserCredentialsDTO userCredentials) {
-//        if (userCredentials == null) {
-//            log.error("Request body is missing");
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body("Request body is missing");
-//        }
 
         try {
-            log.info("Received request to fetch trainee profile for username: {}", userCredentials.getUsername());
+            log.info("Received request to fetch trainee profile for username: {}", usernameDTO.getUsername());
 
-            // Log the request body
-            log.info("Request body: {}", userCredentials);
+            log.info("Request body: {}", usernameDTO);
 
-            String username = userCredentials.getUsername();
-            String password = userCredentials.getPassword();
+            String username = usernameDTO.getUsername();
 
-            // Add more detailed logging if needed
 
-            // Retrieve trainee profile data
             TraineeProfileDTO profileDTO = traineeService.getTraineeProfile(username);
 
             if (profileDTO != null) {
@@ -130,26 +119,19 @@ public class TraineeController {
     }
 
 
-
-
-
     @PutMapping
     public ResponseEntity<?> updateTraineeProfile(@Validated @RequestBody TraineeUpdateDTO updateDTO) {
         String username = updateDTO.getUsername();
-        String password = updateDTO.getPassword();
 
 
-        log.info("REST call made to /api/trainees/update-profile endpoint. Request: {} {} {}", username, password, updateDTO);
+        log.info("REST call made to /api/trainees/update-profile endpoint. Request: {} {}", username, updateDTO);
 
         try {
-            if (!authenticateService.matchUserCredentials(username, password)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-            }
+
 
             Trainee updatedTrainee = traineeService.updateTraineeProfile(
                     username,
                     updateDTO.getFirstName(),
-                    password,
                     updateDTO.getLastName(),
                     updateDTO.getDateOfBirth(),
                     updateDTO.getAddress(),
@@ -166,23 +148,17 @@ public class TraineeController {
     }
 
 
-
     @DeleteMapping
-    public ResponseEntity<?> deleteTraineeProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
-        String username = userCredentials.getUsername();
-        String password = userCredentials.getPassword();
+    public ResponseEntity<?> deleteTraineeProfile(@Validated @RequestBody UsernameDTO usernameDTO) {
+        String username = usernameDTO.getUsername();
 
-        log.info("REST call made to /api/trainees/delete-profile endpoint. Request: {} {}", username, password);
+        log.info("REST call made to /api/trainees/delete-profile endpoint. Request: {}", username);
 
         try {
 
-        if (!authenticateService.matchUserCredentials(username, password)) {
-            return new ResponseEntity<>("Invalid username or password", HttpStatus.UNAUTHORIZED);
-        }
+            traineeService.deleteTraineeByUsername(username);
 
-        traineeService.deleteTraineeByUsername(username);
-
-        return new ResponseEntity<>("Trainee profile deleted successfully", HttpStatus.OK);
+            return new ResponseEntity<>("Trainee profile deleted successfully", HttpStatus.OK);
 
         } catch (Exception e) {
             log.info("\"Error occurred while processing /api/trainees/delete-profile endpoint.\", e");
@@ -192,25 +168,18 @@ public class TraineeController {
     }
 
     @PatchMapping
-    public ResponseEntity<String> updateTraineeStatus(@Validated @RequestBody UpdateUserStatusRequestDTO requestDTO) {
-        boolean authenticated = authenticateService.matchUserCredentials(requestDTO.getUsername(), requestDTO.getPassword());
-        if (!authenticated) {
-            log.error("User authentication failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: User credentials do not match");
-        }
+    public ResponseEntity<String> updateTraineeStatus(@Validated @RequestBody UpdateUserStatusRequestDTO updateUserStatusRequestDTO) {
 
-        log.info("User authenticated successfully");
 
-        Trainee trainee = traineeRepository.findByUserUsername(requestDTO.getUsername());
+        Trainee trainee = traineeRepository.findByUserUsername(updateUserStatusRequestDTO.getUsername());
         if (trainee == null) {
-            log.error("Trainee not found with username: " + requestDTO.getUsername());
+            log.error("Trainee not found with username: " + updateUserStatusRequestDTO.getUsername());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Trainee not found with username: " + requestDTO.getUsername());
+                    .body("Trainee not found with username: " + updateUserStatusRequestDTO.getUsername());
         }
 
         try {
-            traineeService.updateTraineeStatus(requestDTO.getUsername(), requestDTO.getIsActive());
+            traineeService.updateTraineeStatus(updateUserStatusRequestDTO.getUsername(), updateUserStatusRequestDTO.getIsActive());
             return ResponseEntity.ok("Trainee status updated successfully!");
         } catch (Exception e) {
             log.error("An error occurred while updating trainee status", e);
@@ -220,15 +189,13 @@ public class TraineeController {
     }
 
 
-
     @GetMapping("trainings-list")
     public ResponseEntity<?> getTraineeTrainingsList(@Validated @RequestBody TraineeTrainingsRequestDTO requestDTO) {
         try {
-            log.info("REST call made to /api/trainees/trainings endpoint. Request: {} {}", requestDTO.getUsername(), requestDTO.getPassword());
+            log.info("REST call made to /api/trainees/trainings endpoint. Request: {}", requestDTO.getUsername());
 
             List<TrainingDTO> trainings = traineeService.getTraineeTrainingsList(
                     requestDTO.getUsername(),
-                    requestDTO.getPassword(),
                     requestDTO.getFromDate(),
                     requestDTO.getToDate(),
                     requestDTO.getTrainerName(),
@@ -244,8 +211,7 @@ public class TraineeController {
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error occurred while processing /api/trainees/trainings endpoint.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonList(new TrainingDTO("Error occurred while processing the request. Please try again later.", null, null, null, null)));
@@ -256,13 +222,7 @@ public class TraineeController {
     @PutMapping("/trainer-list")
     public ResponseEntity<?> updateTraineeTrainerList(@Validated @RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
         String traineeUsername = requestDTO.getTraineeUsername();
-        String password = requestDTO.getPassword();
 
-        boolean isAuthenticated = authenticateService.matchUserCredentials(traineeUsername, password);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Collections.singletonMap("error", "Authentication failed, please provide valid credentials"));
-        }
 
         try {
             log.info("REST call made to /api/trainees/trainers endpoint.");
@@ -287,10 +247,10 @@ public class TraineeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Collections.singletonMap("error", "Number of trainers provided exceeds the number of available trainings"));
         } catch (TrainerNotFoundException e) {
-            log.error("Trainer not found with username: {}",  e);
+            log.error("Trainer not found with username: {}", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Collections.singletonMap("error", "Trainer not found from the provided list " ));
-        }   catch (IllegalArgumentException e) {
+                    .body(Collections.singletonMap("error", "Trainer not found from the provided list "));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             log.error("Error occurred while processing /api/trainees/trainers endpoint.", e);

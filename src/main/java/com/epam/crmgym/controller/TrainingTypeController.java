@@ -2,6 +2,7 @@ package com.epam.crmgym.controller;
 
 import com.epam.crmgym.dto.training.TrainingTypeDTO;
 import com.epam.crmgym.dto.user.UserCredentialsDTO;
+import com.epam.crmgym.dto.user.UsernameDTO;
 import com.epam.crmgym.entity.TrainingType;
 import com.epam.crmgym.mapper.TrainingTypeMapper;
 import com.epam.crmgym.service.AuthenticateService;
@@ -40,15 +41,8 @@ public class TrainingTypeController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getTrainingTypes(@Validated @RequestBody UserCredentialsDTO credentialsDTO) {
-        boolean authenticated = authenticateService.matchUserCredentials(credentialsDTO.getUsername(), credentialsDTO.getPassword());
-        if (!authenticated) {
-            log.error("User authentication failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: User credentials do not match");
-        }
+    public ResponseEntity<?> getTrainingTypes(@Validated @RequestBody UsernameDTO UsernameDTO) {
 
-        log.info("User authenticated successfully");
 
         try {
             List<TrainingType> trainingTypes = trainingTypeService.getAllTrainingTypes();

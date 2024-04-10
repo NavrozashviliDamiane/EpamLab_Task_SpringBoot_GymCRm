@@ -85,13 +85,10 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     @Transactional
-    public TrainerProfileDTO getTrainerProfile(String username, String password) {
+    public TrainerProfileDTO getTrainerProfile(String username) {
 
         String transactionId = UUID.randomUUID().toString();
         log.info("Transaction started for getting trainer profile. Transaction ID: {}", transactionId);
-
-        authenticateService.matchUserCredentials(username, password);
-        log.info("User Authenticated Successfully");
 
         Trainer trainer = trainerRepository.findByUserUsername(username);
         if (trainer == null) {
@@ -100,6 +97,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         TrainerProfileDTO profileDTO = new TrainerProfileDTO();
         User user = trainer.getUser();
+        profileDTO.setUsername(user.getUsername());
         profileDTO.setFirstName(user.getFirstName());
         profileDTO.setLastName(user.getLastName());
         profileDTO.setIsActive(user.isActive());
@@ -182,9 +180,8 @@ public class TrainerServiceImpl implements TrainerService {
 
 
     @Override
-    public List<TrainerDTO> findUnassignedActiveTrainersByTraineeUsername(String traineeUsername, String password) {
+    public List<TrainerDTO> findUnassignedActiveTrainersByTraineeUsername(String traineeUsername) {
 
-        authenticateService.matchUserCredentials(traineeUsername, password);
         log.info("User Authenticated Successfully");
 
         Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
@@ -204,9 +201,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public TrainerProfileDTO updateTrainerProfile(TrainerUpdateDTO trainerUpdateDTO) {
         String username = trainerUpdateDTO.getUsername();
-        String password = trainerUpdateDTO.getPassword();
 
-        authenticateService.matchUserCredentials(username, password);
         Trainer trainer = trainerRepository.findByUserUsername(username);
 
 
@@ -254,11 +249,9 @@ public class TrainerServiceImpl implements TrainerService {
 
             log.info("Found {} trainings for username: {}", trainings.size(), username);
 
-            List<TrainerTrainingResponseDTO> responseDTOs = trainings.stream()
+            return trainings.stream()
                     .map(trainerTrainingMapper::mapTrainingToResponseDTO)
                     .collect(Collectors.toList());
-
-            return responseDTOs;
         } catch (Exception e) {
             log.error("Error occurred while fetching trainer trainings for username: {}", request.getUsername(), e);
             throw new RuntimeException("Error occurred while fetching trainer trainings", e);

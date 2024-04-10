@@ -11,7 +11,7 @@ import java.util.List;
 public interface TrainerService {
 
 
-    TrainerProfileDTO getTrainerProfile(String username, String password);
+    TrainerProfileDTO getTrainerProfile(String username);
 
     @Transactional
     Trainer createTrainer(TrainerRegistrationRequest request) throws UsernameValidationException;
@@ -20,7 +20,7 @@ public interface TrainerService {
     @Transactional
     void updateTrainerStatus(String username, boolean isActive);
 
-    List<TrainerDTO> findUnassignedActiveTrainersByTraineeUsername(String traineeUsername, String password);
+    List<TrainerDTO> findUnassignedActiveTrainersByTraineeUsername(String traineeUsername);
 
     @Transactional
     TrainerProfileDTO updateTrainerProfile(TrainerUpdateDTO trainerUpdateDTO);

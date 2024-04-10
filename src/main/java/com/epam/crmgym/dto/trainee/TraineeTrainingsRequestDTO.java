@@ -18,10 +18,6 @@ public class TraineeTrainingsRequestDTO {
     @NotBlank(message = "username is required")
     private String username;
 
-    @NotNull(message = "password is required")
-    @NotBlank(message = "password is required")
-    private String password;
-
     @JsonDeserialize(using = DateDeSerializer.class)
     private Date fromDate;
 

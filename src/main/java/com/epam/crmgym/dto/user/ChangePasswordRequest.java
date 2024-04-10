@@ -8,16 +8,16 @@ import lombok.Data;
 @Data
 public class ChangePasswordRequest {
 
-    @NotNull(message = "First name is required")
-    @NotBlank(message = "First name is required")
+    @NotNull(message = "Username is required")
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotNull(message = "First name is required")
-    @NotBlank(message = "First name is required")
+    @NotNull(message = "Old Password is required")
+    @NotBlank(message = "Old Password is required")
     private String oldPassword;
 
-    @NotNull(message = "First name is required")
-    @NotBlank(message = "First name is required")
+    @NotNull(message = "New Password is required")
+    @NotBlank(message = "New Password is required")
     @ValidPassword
     private String newPassword;
 

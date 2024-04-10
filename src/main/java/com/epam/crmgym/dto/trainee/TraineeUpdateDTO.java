@@ -4,7 +4,6 @@ import com.epam.crmgym.exception.DateDeSerializer;
 import com.epam.crmgym.validation.RequiredBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
@@ -24,10 +23,6 @@ public class TraineeUpdateDTO {
     private String username;
 
 
-    @NotNull(message = "Password is required")
-    @NotBlank(message = "Password is required")
-    private String password;
-
     @NotNull(message = "First name is required")
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -45,10 +40,6 @@ public class TraineeUpdateDTO {
     @NotNull(message = "Status field is required")
     @RequiredBoolean(message = "Status field is required")
     private Boolean isActive;
-
-
-
-
 
 }
 

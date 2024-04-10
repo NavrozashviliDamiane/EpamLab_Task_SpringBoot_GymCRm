@@ -2,6 +2,7 @@ package com.epam.crmgym.controller;
 
 import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
 import com.epam.crmgym.dto.user.UserCredentialsDTO;
+import com.epam.crmgym.dto.user.UsernameDTO;
 import com.epam.crmgym.exception.BindingResultError;
 import com.epam.crmgym.exception.UsernameValidationException;
 import com.epam.crmgym.repository.TrainerRepository;
@@ -72,17 +73,13 @@ public class TrainerController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getTrainerProfile(@Validated @RequestBody UserCredentialsDTO userCredentials) {
-        String username = userCredentials.getUsername();
-        String password = userCredentials.getPassword();
+    public ResponseEntity<?> getTrainerProfile(@Validated @RequestBody UsernameDTO usernameDTO) {
+        String username = usernameDTO.getUsername();
 
-        log.info("REST call made to /api/trainers/get-profile endpoint. Request: {} {}", username, password);
+        log.info("REST call made to /api/trainers/get-profile endpoint. Request: {}", username);
 
-        if (!authenticateService.matchUserCredentials(username, password)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
 
-        TrainerProfileDTO trainerProfile = trainerService.getTrainerProfile(username, password);
+        TrainerProfileDTO trainerProfile = trainerService.getTrainerProfile(username);
         if (trainerProfile != null) {
             return ResponseEntity.ok(trainerProfile);
         } else {
@@ -96,13 +93,8 @@ public class TrainerController {
     public ResponseEntity<?> updateTrainerProfile(@Validated @RequestBody TrainerUpdateDTO trainerUpdateDTO) {
 
         String username = trainerUpdateDTO.getUsername();
-        String password = trainerUpdateDTO.getPassword();
 
         log.info("REST call made to /api/trainers/update-profile endpoint. Request: {}", trainerUpdateDTO);
-
-        if (!authenticateService.matchUserCredentials(username, password)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
 
         TrainerProfileDTO updatedProfile = trainerService.updateTrainerProfile(trainerUpdateDTO);
         if (updatedProfile != null) {
@@ -115,12 +107,7 @@ public class TrainerController {
 
     @PatchMapping
     public ResponseEntity<String> updateTrainerStatus(@Validated @RequestBody UpdateUserStatusRequestDTO requestDTO) {
-        boolean authenticated = authenticateService.matchUserCredentials(requestDTO.getUsername(), requestDTO.getPassword());
-        if (!authenticated) {
-            log.error("User authentication failed");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: User credentials do not match");
-        }
+
 
         log.info("User authenticated successfully");
 
@@ -144,17 +131,14 @@ public class TrainerController {
 
     @GetMapping("/unassigned-active")
     public ResponseEntity<?> getUnassignedActiveTrainersByTraineeUsername(
-            @Validated @RequestBody UserCredentialsDTO userCredentials) {
-        String traineeUsername = userCredentials.getUsername();
-        String password = userCredentials.getPassword();
+            @Validated @RequestBody UsernameDTO usernameDTO) {
+        String traineeUsername = usernameDTO.getUsername();
 
-        log.info("REST call made to /api/trainers/unassigned-active endpoint. Request: {} {}", traineeUsername, password);
+        log.info("REST call made to /api/trainers/unassigned-active endpoint. Request: {} ", traineeUsername );
 
-        if (!authenticateService.matchUserCredentials(traineeUsername, password)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonList("Invalid username or password"));
-        }
 
-        List<TrainerDTO> unassignedActiveTrainers = trainerService.findUnassignedActiveTrainersByTraineeUsername(traineeUsername, password);
+
+        List<TrainerDTO> unassignedActiveTrainers = trainerService.findUnassignedActiveTrainersByTraineeUsername(traineeUsername);
         return ResponseEntity.ok(unassignedActiveTrainers);
     }
 
@@ -164,12 +148,9 @@ public class TrainerController {
             @RequestBody TrainerTrainingsRequestDTO request
     ) {
         String username = request.getUsername();
-        String password = request.getPassword();
 
-        log.info("REST call made to /api/trainers/trainings endpoint. Request: {} {}", username, password);
-        if (!authenticateService.matchUserCredentials(username, password)) {
-            return new ResponseEntity("Invalid username or password", HttpStatus.UNAUTHORIZED);
-        }
+        log.info("REST call made to /api/trainers/trainings endpoint. Request: {}", username);
+
 
         try {
             List<TrainerTrainingResponseDTO> trainings = trainerService.getTrainerTrainings(request);
