@@ -1,7 +1,6 @@
 package com.epam.crmgym.controller;
 
 import com.epam.crmgym.dto.user.UpdateUserStatusRequestDTO;
-import com.epam.crmgym.dto.user.UserCredentialsDTO;
 import com.epam.crmgym.dto.user.UsernameDTO;
 import com.epam.crmgym.exception.BindingResultError;
 import com.epam.crmgym.exception.UsernameValidationException;
@@ -17,7 +16,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 

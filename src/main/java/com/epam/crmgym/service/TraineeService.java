@@ -37,5 +37,5 @@ public interface TraineeService {
                                               String trainerName, String trainingTypeName);
 
 
-    List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) throws EntityNotFoundException;
+    List<TrainerResponse> updateTraineeTrainersList(String username, List<String> trainerUsernames) throws EntityNotFoundException;
 }

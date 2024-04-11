@@ -80,9 +80,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (!requestBodyContent.isEmpty()) {
                 ObjectMapper objectMapper = new ObjectMapper();
-                Map<String, String> requestBody = objectMapper.readValue(requestBodyContent, new TypeReference<Map<String, String>>() {
+                Map<String, Object> requestBody = objectMapper.readValue(requestBodyContent, new TypeReference<Map<String, Object>>() {
                 });
-                String requestBodyUsername = requestBody.get("username");
+                Object requestBodyUsername = requestBody.get("username");
                 log.info("Username from request body: {}", requestBodyUsername);
 
                 if (requestBodyUsername != null && requestBodyUsername.equals(userDetails.getUsername())) {

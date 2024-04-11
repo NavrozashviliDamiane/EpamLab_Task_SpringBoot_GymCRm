@@ -7,6 +7,7 @@ import lombok.*;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class UpdateUserStatusRequestDTO {
 
     @NotNull(message = "Username is required")

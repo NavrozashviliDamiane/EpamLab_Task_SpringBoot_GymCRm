@@ -16,7 +16,7 @@ public class UpdateTraineeTrainerListRequestDTO {
 
     @NotNull(message = "username is required")
     @NotBlank(message = "username is required")
-    private String traineeUsername;
+    private String username;
 
 
     @NotEmpty(message = "trainer usernames list is required")

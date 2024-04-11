@@ -221,7 +221,7 @@ public class TraineeController {
 
     @PutMapping("/trainer-list")
     public ResponseEntity<?> updateTraineeTrainerList(@Validated @RequestBody UpdateTraineeTrainerListRequestDTO requestDTO) {
-        String traineeUsername = requestDTO.getTraineeUsername();
+        String traineeUsername = requestDTO.getUsername();
 
 
         try {
