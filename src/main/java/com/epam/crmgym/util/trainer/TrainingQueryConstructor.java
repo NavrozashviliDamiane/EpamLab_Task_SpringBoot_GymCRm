@@ -22,18 +22,23 @@ public class TrainingQueryConstructor {
             throw new IllegalArgumentException("Trainer ID cannot be null.");
         }
 
+        List<Training> queryResult;
+
         if (fromDate != null && toDate != null && traineeId != null) {
-            return trainingRepository.findByTrainerIdAndTrainingDateBetweenAndTraineeId(trainerId, fromDate, toDate, traineeId);
+            queryResult = trainingRepository.findByTrainerIdAndTrainingDateBetweenAndTraineeId(trainerId, fromDate, toDate, traineeId);
         } else if (fromDate != null && toDate != null) {
-            return trainingRepository.findByTrainerIdAndTrainingDateBetween(trainerId, fromDate, toDate);
+            queryResult = trainingRepository.findByTrainerIdAndTrainingDateBetween(trainerId, fromDate, toDate);
         } else if (fromDate != null) {
-            return trainingRepository.findByTrainerIdAndTrainingDateAfter(trainerId, fromDate);
+            queryResult = trainingRepository.findByTrainerIdAndTrainingDateAfter(trainerId, fromDate);
         } else if (toDate != null) {
-            return trainingRepository.findByTrainerIdAndTrainingDateBefore(trainerId, toDate);
+            queryResult = trainingRepository.findByTrainerIdAndTrainingDateBefore(trainerId, toDate);
         } else if (traineeId != null) {
-            return trainingRepository.findByTrainerIdAndTraineeId(trainerId, traineeId);
+            queryResult = trainingRepository.findByTrainerIdAndTraineeId(trainerId, traineeId);
         } else {
-            return trainingRepository.findByTrainerId(trainerId);
+            queryResult = trainingRepository.findByTrainerId(trainerId);
         }
+
+        return queryResult;
     }
+
 }
