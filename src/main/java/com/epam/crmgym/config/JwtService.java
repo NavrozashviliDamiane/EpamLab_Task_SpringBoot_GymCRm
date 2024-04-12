@@ -24,10 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class JwtService {
 
     @Value("${security.jwt.expiration-minutes}")
-    private long EXPIRATION_MINUTES;
+    private long expirationMinutes;
 
     @Value("${security.jwt.secret-key}")
-    private String SECRET_KEY;
+    private String secretKey;
 
     private final UserRepository userRepository;
 
@@ -43,7 +43,7 @@ public class JwtService {
 
     public String generateToken(User user, Map<String, Object> extraClaims) {
         Date issuedAt = new Date(System.currentTimeMillis());
-        Date expiration = new Date(issuedAt.getTime() + (EXPIRATION_MINUTES * 60 * 1000));
+        Date expiration = new Date(issuedAt.getTime() + (expirationMinutes * 60 * 1000));
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(user.getUsername())
@@ -55,7 +55,7 @@ public class JwtService {
 
 
     private Key generateKey(){
-        byte[] secreateAsBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] secreateAsBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(secreateAsBytes);
     }
 
@@ -76,13 +76,13 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String jwt) {
-        return Jwts.parser().setSigningKey(SECRET_KEY).build()
+        return Jwts.parser().setSigningKey(secretKey).build()
                 .parseClaimsJws(jwt).getBody();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(SECRET_KEY).build().parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).build().parseClaimsJws(token);
 
             Date expirationDate = claims.getBody().getExpiration();
             return expirationDate.after(new Date());

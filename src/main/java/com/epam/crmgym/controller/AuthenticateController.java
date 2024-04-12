@@ -73,8 +73,4 @@ public class AuthenticateController {
             return ResponseEntity.badRequest().body("Invalid token");
         }
     }
-
-
-
-
 }

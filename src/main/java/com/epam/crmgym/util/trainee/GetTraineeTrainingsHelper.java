@@ -65,23 +65,23 @@ public class GetTraineeTrainingsHelper {
 
         if (fromDate != null && toDate != null) {
             if (trainerId != null && trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainerId, trainingTypeId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtBtwnAndTrIdAndTyIdAndDurGt(traineeId, fromDate, toDate, trainerId, trainingTypeId, 0);
             } else if (trainerId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainerIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainerId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtBtwnAndTrIdAndDurGt(traineeId, fromDate, toDate, trainerId, 0);
             } else if (trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, trainingTypeId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtBtwnAndTyIdAndDurGt(traineeId, fromDate, toDate, trainingTypeId, 0);
             } else {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateBetweenAndTrainingDurationGreaterThan(traineeId, fromDate, toDate, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtBtwnAndDurGt(traineeId, fromDate, toDate, 0);
             }
         } else if (toDate == null && fromDate != null) {
             if (trainerId != null && trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainerIdAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainerId, trainingTypeId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtGtEqAndTrIdAndTyIdAndDurGt(traineeId, fromDate, trainerId, trainingTypeId, 0);
             } else if (trainerId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainerIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainerId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtGtEqAndTrIdAndDurGt(traineeId, fromDate, trainerId, 0);
             } else if (trainingTypeId != null) {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainingTypeIdAndTrainingDurationGreaterThan(traineeId, fromDate, trainingTypeId, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtGtEqAndTyIdAndDurGt(traineeId, fromDate, trainingTypeId, 0);
             } else {
-                trainings = trainingRepository.findByTraineeIdAndTrainingDateGreaterThanEqualAndTrainingDurationGreaterThan(traineeId, fromDate, 0);
+                trainings = trainingRepository.findTrByTnIdAndDtGtEqAndDurGt(traineeId, fromDate, 0);
             }
         } else if (trainerId != null && trainingTypeId != null) {
             trainings = trainingRepository.findByTraineeIdAndTrainerIdAndTrainingTypeId(traineeId, trainerId, trainingTypeId);

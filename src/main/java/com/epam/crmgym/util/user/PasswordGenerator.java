@@ -1,15 +1,8 @@
 package com.epam.crmgym.util.user;
 
 import java.security.SecureRandom;
-import java.util.Random;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.security.SecureRandom;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-import java.security.SecureRandom;
 
 public class PasswordGenerator {
 
@@ -34,7 +27,7 @@ public class PasswordGenerator {
 
     public static String hashPasswordWithSalt(String password, String salt) {
         String saltedPassword = password + salt;
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10); // Specify the cost parameter as 10
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         return passwordEncoder.encode(saltedPassword);
     }
 }
