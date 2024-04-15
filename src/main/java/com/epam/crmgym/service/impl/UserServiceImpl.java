@@ -1,5 +1,6 @@
 package com.epam.crmgym.service.impl;
 
+import com.epam.crmgym.exception.UnauthorizedAccessException;
 import com.epam.crmgym.exception.UsernameValidationException;
 import lombok.extern.slf4j.Slf4j;
 import com.epam.crmgym.dto.user.ChangePasswordRequest;
@@ -9,6 +10,7 @@ import com.epam.crmgym.service.AuthenticateService;
 import com.epam.crmgym.service.UserService;
 import com.epam.crmgym.util.user.PasswordGenerator;
 import com.epam.crmgym.util.user.UsernameGenerator;
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,15 +40,17 @@ public class UserServiceImpl implements UserService {
         String username = usernameGenerator.generateUsername(firstName, lastName);
 
         String password = PasswordGenerator.generatePassword(10);
+        String salt = PasswordGenerator.generateSalt();
+        String hashedPassword = PasswordGenerator.hashPasswordWithSalt(password, salt);
 
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUsername(username);
-        user.setPassword(password);
+        user.setPassword(hashedPassword);
         user.setActive(true);
 
-        User createdUser =  userRepository.save(user);
+        User createdUser = userRepository.save(user);
 
         log.info("User Created Successfully");
 
@@ -70,25 +74,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(ChangePasswordRequest request) {
+    public void changePassword(ChangePasswordRequest request) throws UnauthorizedAccessException {
         String transactionId = UUID.randomUUID().toString();
         log.info("Transaction started for trainee creation. Transaction ID: {}", transactionId);
 
-        try {
-            authenticateService.matchUserCredentials(request.getUsername(), request.getOldPassword());
+        if (authenticateService.matchUserCredentials(request.getUsername(), request.getOldPassword())) {
+            try {
+                User user = userRepository.findByUsername(request.getUsername());
 
-            User user = userRepository.findByUsername(request.getUsername());
+                user.setPassword(request.getNewPassword());
+                log.info("Transaction finished for setting password. Transaction ID: {}", transactionId);
 
-            user.setPassword(request.getNewPassword());
-            log.info("Transaction finished for setting password. Transaction ID: {}", transactionId);
+                userRepository.save(user);
+                log.info("Transaction finished for saving user. Transaction ID: {}", transactionId);
 
-            userRepository.save(user);
-            log.info("Transaction finished for saving user. Transaction ID: {}", transactionId);
-
-            log.info("Password changed successfully for user: {}", request.getUsername());
-        } catch (Exception e) {
-            log.error("Authentication failed for user: {}", request.getUsername(), e);
-            throw e;
+                log.info("Password changed successfully for user: {}", request.getUsername());
+            } catch (Exception e) {
+                log.error("An error occurred during password change for user: {}", request.getUsername(), e);
+                throw new ServiceException("Failed to change password for user: " + request.getUsername());
+            }
+        } else {
+            log.error("Authentication failed for user: {}", request.getUsername());
+            throw new UnauthorizedAccessException("Authentication failed for user: " + request.getUsername());
         }
     }
 

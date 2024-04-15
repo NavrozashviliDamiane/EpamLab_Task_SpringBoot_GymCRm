@@ -17,10 +17,11 @@ public interface TrainingService {
 
 
 
+
+
     @Transactional
-    Training createTraining(String traineeUsername, String trainerUsername,
-                            String trainingName, Date trainingDate, Integer trainingDuration,
-                            String password);
+    Training createTraining(String username, String trainerUsername,
+                            String trainingName, Date trainingDate, Integer trainingDuration);
 
     void deleteTraining(Long id, String username, String password);
 

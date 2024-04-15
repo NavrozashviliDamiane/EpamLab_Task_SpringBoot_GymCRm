@@ -20,7 +20,7 @@ public class TrainingRequest {
 
     @NotNull(message = "Trainee Username is required")
     @NotBlank(message = "Trainee Username is required")
-    private String traineeUsername;
+    private String username;
 
     @NotNull(message = "Trainer Username is required")
     @NotBlank(message = "Trainer Username is required")
@@ -39,9 +39,6 @@ public class TrainingRequest {
     @NotNull(message = "Training duration is required")
     private Integer trainingDuration;
 
-    @NotNull(message = "Password is required")
-    @NotBlank(message = "Password is required")
-    private String password;
 
 }
 

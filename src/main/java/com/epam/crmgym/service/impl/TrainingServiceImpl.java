@@ -54,14 +54,11 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Override
     @Transactional
-    public Training createTraining(String traineeUsername, String trainerUsername,
-                                   String trainingName, Date trainingDate, Integer trainingDuration,
-                                   String password){
+    public Training createTraining(String username, String trainerUsername,
+                                   String trainingName, Date trainingDate, Integer trainingDuration){
 
-        authenticateService.matchUserCredentials(traineeUsername, password);
-        log.info("User Authenticated Successfully");
 
-        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
+        Trainee trainee = traineeRepository.findByUserUsername(username);
 
         Trainer trainer = trainerRepository.findByUserUsername(trainerUsername);
 

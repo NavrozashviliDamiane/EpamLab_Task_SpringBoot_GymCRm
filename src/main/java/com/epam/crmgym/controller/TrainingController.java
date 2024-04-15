@@ -34,7 +34,8 @@ public class TrainingController {
 
 
         try {
-            trainingService.createTraining(trainingRequest.getTraineeUsername(), trainingRequest.getTrainerUsername(), trainingRequest.getTrainingName(), trainingRequest.getTrainingDate(), trainingRequest.getTrainingDuration(), trainingRequest.getPassword());
+            trainingService.createTraining(trainingRequest.getUsername(),
+                    trainingRequest.getTrainerUsername(), trainingRequest.getTrainingName(), trainingRequest.getTrainingDate(), trainingRequest.getTrainingDuration());
             return ResponseEntity.ok("Training created successfully!");
         } catch (Exception e) {
 

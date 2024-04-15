@@ -113,7 +113,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     @Transactional
-    public Trainee updateTraineeProfile(String username, String firstName, String password, String lastName,
+    public Trainee updateTraineeProfile(String username, String firstName, String lastName,
                                         Date dateOfBirth, String address, Boolean isActive) {
 
         String transactionId = UUID.randomUUID().toString();
@@ -121,7 +121,6 @@ public class TraineeServiceImpl implements TraineeService {
 
         try {
 
-            authenticateService.matchUserCredentials(username, password);
             Trainee trainee = traineeRepository.findByUserUsername(username);
 
             if (trainee != null) {
@@ -213,10 +212,9 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public List<TrainingDTO> getTraineeTrainingsList(String username, String password, Date fromDate, Date toDate,
+    public List<TrainingDTO> getTraineeTrainingsList(String username, Date fromDate, Date toDate,
                                                      String trainerName, String trainingTypeName) {
 
-        authenticateService.matchUserCredentials(username, password);
 
         Trainee trainee = traineeRepository.findByUserUsername(username);
         if (trainee == null) {
@@ -243,18 +241,18 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     @Transactional
-    public List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) throws TraineeNotFoundException, InvalidTrainersException, TrainerNotFoundException {
-        Trainee trainee = traineeRepository.findByUserUsername(traineeUsername);
+    public List<TrainerResponse> updateTraineeTrainersList(String username, List<String> trainerUsernames) throws TraineeNotFoundException, InvalidTrainersException, TrainerNotFoundException {
+        Trainee trainee = traineeRepository.findByUserUsername(username);
         if (trainee == null) {
-            log.info("Trainee not found with username: {}", traineeUsername);
-            throw new TraineeNotFoundException("Trainee not found with username: " + traineeUsername);
+            log.info("Trainee not found with username: {}", username);
+            throw new TraineeNotFoundException("Trainee not found with username: " + username);
         }
 
         Long traineeId = trainee.getId();
         List<Training> trainings = trainingRepository.findByTraineeId(traineeId);
 
         if (trainerUsernames.size() > trainings.size()) {
-            log.warn("Number of trainers provided exceeds the number of available trainings for trainee: {}", traineeUsername);
+            log.warn("Number of trainers provided exceeds the number of available trainings for trainee: {}", username);
             throw new InvalidTrainersException("Number of trainers provided exceeds the number of available trainings");
         }
 
@@ -289,7 +287,7 @@ public class TraineeServiceImpl implements TraineeService {
         }
 
         List<TrainerResponse> updatedTrainers = updateTraineeTrainersListHelper.getUpdatedTrainers(trainings, trainerRepository);
-        log.info("Updated trainer list retrieved for trainee: {}", traineeUsername);
+        log.info("Updated trainer list retrieved for trainee: {}", username);
         return updatedTrainers;
     }
 

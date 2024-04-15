@@ -20,9 +20,10 @@ public class DatabaseHealthIndicator implements HealthIndicator {
     public Health health() {
         try {
             jdbcTemplate.execute("SELECT * FROM users");
-            return Health.up().build();
+            return Health.up().withDetail("message", "Database is up").build();
         } catch (Exception e) {
             return Health.down().withDetail("error", e.getMessage()).build();
         }
     }
+
 }

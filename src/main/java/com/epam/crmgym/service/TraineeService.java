@@ -18,11 +18,8 @@ public interface TraineeService {
     TraineeProfileDTO getTraineeProfile(String username);
 
 
-
-
-
     @Transactional
-    Trainee updateTraineeProfile(String username, String firstName, String password, String lastName,
+    Trainee updateTraineeProfile(String username, String firstName, String lastName,
                                  Date dateOfBirth, String address, Boolean isActive);
 
     Trainee createTrainee(String firstName, String lastName, Date dateOfBirth, String address) throws UsernameValidationException;
@@ -33,13 +30,12 @@ public interface TraineeService {
     void updateTraineeStatus(String username, boolean isActive);
 
 
-
     @Transactional
     void deleteTraineeByUsername(String username);
 
-    List<TrainingDTO> getTraineeTrainingsList(String username, String password, Date fromDate, Date toDate,
+    List<TrainingDTO> getTraineeTrainingsList(String username, Date fromDate, Date toDate,
                                               String trainerName, String trainingTypeName);
 
 
-    List<TrainerResponse> updateTraineeTrainersList(String traineeUsername, List<String> trainerUsernames) throws EntityNotFoundException;
+    List<TrainerResponse> updateTraineeTrainersList(String username, List<String> trainerUsernames) throws EntityNotFoundException;
 }
